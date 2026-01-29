@@ -1,0 +1,24 @@
+{
+    "rewrites": [
+        {
+            "source": "/",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/admin",
+            "destination": "/admin.html"
+        },
+        {
+            "source": "/dashboard",
+            "destination": "/dashboard.html"
+        },
+        {
+            "source": "/shop",
+            "destination": "/shop.html"
+        },
+        {
+            "source": "/debug",
+            "destination": "/debug_connection.html"
+        }
+    ]
+}
