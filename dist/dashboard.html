@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Painel | SE7ENGEN AUTOMACAO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script type="module" crossorigin src="/assets/dashboard-dy6yVRAd.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-CODpAGvx.js">
+  <link rel="stylesheet" crossorigin href="/assets/supabase-Duu-T5AG.css">
+</head>
+
+<body style="background-color: var(--bg-dark);">
+
+    <nav id="navbar" class="scrolled">
+        <div class="container">
+            <a href="index.html" class="logo">SE7<span>ENGEN</span></a>
+            <ul class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+                <li>
+                    <a href="#cart" onclick="showTab('cart')" class="cart-link" id="navCart" title="Meu Carrinho"
+                        style="margin-right: 0;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8" cy="21" r="1"></circle>
+                            <circle cx="19" cy="21" r="1"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.12">
+                            </path>
+                        </svg>
+                        <span class="cart-badge">0</span>
+                    </a>
+                </li>
+                <li><a href="index.html">Início</a></li>
+                <li><button id="logoutBtn" class="btn btn-outline" style="border: none;">Sair</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="userDashboard" class="dashboard active" style="margin-top: 100px;">
+        <div class="container">
+            <header class="admin-header">
+                <div>
+                    <h1 id="userName">Bem-vindo!</h1>
+                    <p id="userEmail" style="color: var(--text-muted);"></p>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card glass" onclick="showTab('quotes')">
+                    <h4>Meus Orçamentos</h4>
+                    <div id="quoteCount" class="value">0</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('cart')">
+                    <h4>Carrinho</h4>
+                    <div id="cartCount" class="value">0</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('orders')">
+                    <h4>Pedidos Feitos</h4>
+                    <div id="orderCount" class="value">0</div>
+                </div>
+                <!-- New Settings Card -->
+                <div class="stat-card glass" onclick="showTab('settings')"
+                    style="border-top: 2px solid var(--primary);">
+                    <h4>Meus Dados</h4>
+                    <div class="value">⚙️</div>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="admin-content">
+                <!-- Content will be swapped here -->
+                <div id="quotesSection" class="tab-content">
+                    <h3>Meus Orçamentos</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Serviço</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userQuotesBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="cartSection" class="tab-content" style="display: none;">
+                    <h3>Carrinho de Compras</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;"><input type="checkbox" id="selectAllCart"
+                                        checked title="Selecionar Todos"></th>
+                                <th>Imagem</th>
+                                <th>Produto</th>
+                                <th>Preço Uni.</th>
+                                <th>Total</th>
+                                <th style="text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userCartBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 2rem; text-align: right;">
+                        <button id="checkoutBtn" class="btn btn-primary" onclick="handleCheckout()">Finalizar
+                            Compra</button>
+                    </div>
+                </div>
+
+                <div id="ordersSection" class="tab-content" style="display: none;">
+                    <h3>Histórico de Pedidos</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID do Pedido</th>
+                                <th>Data</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userOrdersBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Nenhum pedido realizado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- New Profile Settings Section -->
+                <div id="settingsSection" class="tab-content" style="display: none;">
+                    <h3>Atualizar Meus Dados</h3>
+                    <div class="glass" style="padding: 2.5rem; margin-top: 1.5rem;">
+                        <form id="profileForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>Nome Completo</label>
+                                    <input type="text" id="profileName" required placeholder="Seu Nome">
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone / WhatsApp</label>
+                                    <input type="text" id="profilePhone" placeholder="(00) 00000-0000">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Nome da Empresa (se aplicável)</label>
+                                    <input type="text" id="profileCompany" placeholder="SE7ENGEN LTDA">
+                                </div>
+                                <div class="form-group">
+                                    <label>País</label>
+                                    <input type="text" id="profileCountry" placeholder="Brasil">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP</label>
+                                    <input type="text" id="profileZip" placeholder="00000-000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado (UF)</label>
+                                    <select id="profileState">
+                                        <option value="">Selecione</option>
+                                        <option value="AC">AC</option>
+                                        <option value="AL">AL</option>
+                                        <option value="AP">AP</option>
+                                        <option value="AM">AM</option>
+                                        <option value="BA">BA</option>
+                                        <option value="CE">CE</option>
+                                        <option value="DF">DF</option>
+                                        <option value="ES">ES</option>
+                                        <option value="GO">GO</option>
+                                        <option value="MA">MA</option>
+                                        <option value="MT">MT</option>
+                                        <option value="MS">MS</option>
+                                        <option value="MG">MG</option>
+                                        <option value="PA">PA</option>
+                                        <option value="PB">PB</option>
+                                        <option value="PR">PR</option>
+                                        <option value="PE">PE</option>
+                                        <option value="PI">PI</option>
+                                        <option value="RJ">RJ</option>
+                                        <option value="RN">RN</option>
+                                        <option value="RS">RS</option>
+                                        <option value="RO">RO</option>
+                                        <option value="RR">RR</option>
+                                        <option value="SC">SC</option>
+                                        <option value="SP">SP</option>
+                                        <option value="SE">SE</option>
+                                        <option value="TO">TO</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="profileCity" placeholder="São Paulo">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Rua / Logradouro</label>
+                                    <input type="text" id="profileStreet" placeholder="Av. Industrial">
+                                </div>
+                                <div class="form-group">
+                                    <label>Número</label>
+                                    <input type="text" id="profileNumber" placeholder="123">
+                                </div>
+                                <div class="form-group">
+                                    <label>Bairro</label>
+                                    <input type="text" id="profileNeighborhood" placeholder="Centro">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Observações de Endereço (Ref., Bloco, Apt.)</label>
+                                    <input type="text" id="profileAddressNotes" placeholder="Próximo ao mercado...">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Salvar
+                                Alterações</button>
+                            <p id="profileStatus" style="margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping Address Modal -->
+    <div id="shippingModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 600px;">
+            <span class="close-modal" id="closeShippingModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2>Endereço de Entrega</h2>
+                <p style="color: var(--text-muted);">Confirme onde deseja receber seu pedido</p>
+            </div>
+
+            <div id="savedAddressSection"
+                style="display: none; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 8px; background: rgba(0, 210, 255, 0.05);">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Endereço Salvo</h4>
+                <p id="savedAddressText" style="font-size: 0.9rem; line-height: 1.6;"></p>
+                <button id="useSavedAddressBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Usar este
+                    Endereço</button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 1.5rem; position: relative;" id="addressDivider">
+                <span
+                    style="background: var(--bg-card); padding: 0 10px; position: relative; z-index: 1; color: var(--text-muted);">ou
+                    use um novo endereço</span>
+                <div
+                    style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--glass-border);">
+                </div>
+            </div>
+
+            <form id="newAddressForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" id="shipZip" required placeholder="00000-000">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado (UF)</label>
+                        <input type="text" id="shipState" required placeholder="Ex: SP">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Cidade</label>
+                        <input type="text" id="shipCity" required placeholder="Sua Cidade">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Rua / Logradouro</label>
+                        <input type="text" id="shipStreet" required placeholder="Av. Principal">
+                    </div>
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" id="shipNumber" required placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label>Bairro</label>
+                        <input type="text" id="shipNeighborhood" required placeholder="Centro">
+                    </div>
+                </div>
+                <button type="submit" id="calculateShippingBtn" class="btn btn-outline"
+                    style="width: 100%; margin-top: 1.5rem;">Calcular Opções de Entrega</button>
+            </form>
+
+            <div id="shippingOptionsSection" style="display: none; margin-top: 2rem;">
+                <h4 style="margin-bottom: 1rem;">Escolha o Tipo de Envio</h4>
+                <div id="shippingOptionsList" style="display: grid; gap: 10px;">
+                    <!-- Quotes will be loaded here -->
+                </div>
+            </div>
+
+            <div id="paymentSection" style="display: none; margin-top: 2rem;">
+                <h4 style="margin-bottom: 1rem;">Escolha a Forma de Pagamento</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="payment-option glass" id="payPix"
+                        style="padding: 1.5rem; text-align: center; cursor: pointer; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📱 PIX</div>
+                        <small style="color: var(--text-muted);">Aprovação Imediata</small>
+                    </div>
+                    <div class="payment-option glass" id="payCard"
+                        style="padding: 1.5rem; text-align: center; cursor: pointer; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💳 Cartão</div>
+                        <small style="color: var(--text-muted);">Até 12x</small>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div id="orderFinalSummary"
+                style="display: none; margin-top: 2rem; padding: 1.5rem; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Subtotal:</span>
+                    <span id="summarySubtotal">R$ 0,00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Frete (<span id="summaryMethod">...</span>):</span>
+                    <span id="summaryShipping">R$ 0,00</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem; color: var(--primary); margin-top: 1rem;">
+                    <span>Total:</span>
+                    <span id="summaryTotal">R$ 0,00</span>
+                </div>
+                <button id="confirmOrderBtn" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Confirmar
+                    e Finalizar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

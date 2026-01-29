@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin | SE7ENGEN AUTOMACAO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/admin-B3n6BHqw.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-CODpAGvx.js">
+  <link rel="stylesheet" crossorigin href="/assets/supabase-Duu-T5AG.css">
+</head>
+
+<body style="background-color: var(--bg-dark);">
+    <style>
+        .admin-card {
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+    </style>
+
+    <!-- Admin Login -->
+    <div id="adminLogin" class="admin-login-wrapper">
+        <div class="modal-content glass" style="display: block; position: relative; animation: none;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 0.5rem;">Acesso Restrito</h2>
+                <p style="color: var(--text-muted);">Painel de Gerenciamento SE7ENGEN</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label>E-mail Administrativo</label>
+                    <input type="email" id="adminEmail" required placeholder="admin@se7engen.com.br">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="adminPass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar no Painel</button>
+            </form>
+            <p id="loginError" style="color: #ff4d4d; margin-top: 1rem; text-align: center; display: none;">Credenciais
+                inválidas. Tente novamente.</p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="dashboard">
+        <div class="container">
+            <header class="admin-header">
+                <div class="logo">SE7<span>ENGEN</span> <small style="font-size: 0.8rem; color: var(--text-muted);">|
+                        ADMIN</small></div>
+                <button id="logoutAdmin" class="btn btn-outline">Sair do Painel</button>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <h4>Orçamentos Pendentes</h4>
+                    <div id="pendingCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Vendas este Mês</h4>
+                    <div id="totalSales" class="value">R$ 0,00</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Total de Pedidos</h4>
+                    <div id="orderCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Novos Usuários</h4>
+                    <div id="userCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('shipping')"
+                    style="border-top: 2px solid var(--primary);">
+                    <h4>Regras de Frete</h4>
+                    <div id="shippingRuleCount" class="value">0</div>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Últimas Solicitações (Dados do Supabase)</h3>
+                    <button id="refreshData" class="btn btn-primary btn-small" style="padding: 0.5rem 1rem;">Atualizar
+                        Dados</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Serviço</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotesTableBody">
+                        <!-- Data will be loaded here -->
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Carregando dados...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Categorias</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="newCatName" class="glass" placeholder="Nova Categoria"
+                            style="padding: 0.5rem; border-radius: 4px; border: 1px solid var(--glass-border); color: white;">
+                        <button id="addCategoryBtn" class="btn btn-primary btn-small">Adicionar</button>
+                    </div>
+                </div>
+                <div id="categoriesList" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- Categories will be loaded here -->
+                    <span style="color: var(--text-muted);">Carregando categorias...</span>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Regras de Frete Grátis</h3>
+                    <button class="btn btn-primary btn-small" onclick="window.openShippingModal()">+ Nova Regra</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>CEP / Padrão</th>
+                            <th>Motivo (Label)</th>
+                            <th>Criado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shippingRulesTableBody">
+                        <tr>
+                            <td colspan="4">Carregando regras...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Pedidos</h3>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Data</th>
+                            <th>Pagamento</th>
+                            <th>Status Pag.</th>
+                            <th>Status Pedido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Carregando pedidos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="loadMoreOrdersContainer" style="text-align: center; margin-top: 1rem; display: none;">
+                    <button id="loadMoreOrdersBtn" class="btn btn-outline" style="padding: 0.5rem 2rem;">Carregar
+                        Mais</button>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Produtos (Loja)</h3>
+                    <button id="openAddProduct" class="btn btn-primary btn-small">+ Novo Produto</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Img</th>
+                            <th>Produto</th>
+                            <th>Preço</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Carregando produtos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <span class="close-modal" id="closeProductModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 id="modalTitle">Novo Produto</h2>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="pName" required placeholder="Ex: CLP Siemens S7-1200">
+                    </div>
+                    <div class="form-group">
+                        <label>Preço (R$)</label>
+                        <input type="number" id="pPrice" step="0.01" required placeholder="0.00">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="pCategory">
+                            <!-- Dynamic Categories -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="pBrand" placeholder="Ex: Siemens, WEG, Schneider">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>URL da Imagem</label>
+                    <input type="text" id="pImage" placeholder="Ex: public/imagem.png">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                        <label>Peso (kg)</label>
+                        <input type="number" id="pWeight" step="0.001" value="0.500">
+                    </div>
+                    <div class="form-group">
+                        <label>Alt (cm)</label>
+                        <input type="number" id="pHeight" step="0.1" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Larg (cm)</label>
+                        <input type="number" id="pWidth" step="0.1" value="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Comp (cm)</label>
+                        <input type="number" id="pLength" step="0.1" value="20">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição Curta</label>
+                    <textarea id="pDesc" rows="2" required placeholder="Detalhes do equipamento..."></textarea>
+                </div>
+                <div class="form-group"
+                    style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                        Variações (ex: 220V, Modelo Pro)
+                        <button type="button" id="addVarBtn" class="btn btn-outline btn-small">+ Add Variação</button>
+                    </label>
+                    <div id="variationBuilder" style="margin-top: 10px;">
+                        <!-- Variations rows -->
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Salvar Produto
+                    Completo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shipping Rule Modal -->
+    <div id="shippingModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <span class="close-modal" id="closeShippingModal">&times;</span>
+            <h2 id="shippingModalTitle">Nova Regra de Frete</h2>
+            <form id="shippingForm">
+                <div class="form-group">
+                    <label>CEP ou Padrão (Ex: 83601-120 ou 836%)</label>
+                    <input type="text" id="sCep" required placeholder="83601-120">
+                    <small style="color: var(--text-muted);">Use % para cobrir uma faixa de CEPs</small>
+                </div>
+                <div class="form-group">
+                    <label>Título da Regra</label>
+                    <input type="text" id="sLabel" placeholder="Ex: Promoção Local">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Salvar
+                    Regra</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 600px;">
+            <span class="close-modal" id="closeOrderDetailsModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2>Detalhes do Pedido</h2>
+                <p id="detailOrderId" style="color: var(--primary); font-weight: bold;"></p>
+            </div>
+
+            <div id="orderContent"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: left; margin-bottom: 2rem;">
+                <div>
+                    <h4
+                        style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        Dados do Cliente</h4>
+                    <p id="detailCustomerName"><strong>Nome:</strong> ...</p>
+                    <p id="detailCustomerEmail"><strong>E-mail:</strong> ...</p>
+                    <p id="detailCustomerPhone"><strong>Telefone:</strong> ...</p>
+                </div>
+                <div>
+                    <h4
+                        style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        Endereço de Entrega</h4>
+                    <p id="detailShippingAddr">...</p>
+                </div>
+            </div>
+
+            <h4
+                style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem; text-align: left;">
+                Produtos</h4>
+            <div id="detailProducts" style="max-height: 200px; overflow-y: auto; margin-bottom: 2rem;">
+                <!-- Product list will be loaded here -->
+            </div>
+
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 1rem; text-align: right;">
+                <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">Total: <span id="detailTotal">R$
+                        0,00</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Supabase Connection</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #00ff88;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            font-weight: bold;
+        }
+
+        #log {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        .error {
+            color: #ff4d4d;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛠️ Teste de Conexão com Supabase</h1>
+    <p>Clique no botão para testar se o seu navegador consegue falar com a função.</p>
+    <button onclick="testConnection()">Testar Conexão Agora</button>
+    <div id="log">Aguardando teste...</div>
+
+    <script>
+        const SUPABASE_URL = 'https://wrvmqcmpearxccdsffvv.supabase.co';
+        // Anon Key from supabase.js
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indydm1xY21wZWFyeGNjZHNmZnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1MTgyMzMsImV4cCI6MjA4NTA5NDIzM30.udNoRLKR3-lJXH1SYSyS6pujxyrky17Mv792WsyuSsk';
+
+        async function testConnection() {
+            const logEl = document.getElementById('log');
+            logEl.innerText = "Iniciando teste...\n";
+            logEl.classList.remove('error');
+
+            try {
+                const url = `${SUPABASE_URL}/functions/v1/mercadopago-checkout`;
+                logEl.innerText += `Tentando acessar: ${url}\n`;
+
+                const shouldBe400 = "Esperamos um erro 400 (Bad Request) porque não enviamos dados. Isso é BOM.\n";
+                logEl.innerText += shouldBe400;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({}) // Empty body
+                });
+
+                logEl.innerText += `\nSTATUS: ${response.status} ${response.statusText}\n`;
+
+                const text = await response.text();
+                logEl.innerText += `RESPOSTA: ${text}\n`;
+
+                if (response.status === 400 || response.status === 200) {
+                    logEl.innerText += "\n✅ SUCESSO! O servidor respondeu. A conexão está funcionando.";
+                } else {
+                    logEl.innerText += "\n⚠️ ALERTA: O servidor respondeu, mas com um código inesperado.";
+                }
+
+            } catch (error) {
+                logEl.classList.add('error');
+                logEl.innerText += `\n❌ ERRO CRÍTICO (Failed to fetch):\n${error.message}\n`;
+                logEl.innerText += `\nPossíveis causas:\n1. Bloqueador de anúncios/extensão (tente aba anônima).\n2. Firewall ou Antivírus bloqueando`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+
+</html>
