@@ -82,6 +82,13 @@ ul {
   color: var(--bg-dark);
 }
 
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+
 /* Sections */
 section {
   padding: 80px 0;
@@ -624,6 +631,21 @@ footer {
 .admin-table tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }
+
+.admin-table td:last-child {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.admin-table td:last-child button {
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-table td:last-child button:last-child {
+  margin-right: 0;
+}
+
 
 .status-badge {
   padding: 0.3rem 0.8rem;
