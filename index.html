@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE7ENGEN AUTOMACAO | Inovação em Automação Elétrica e Industrial</title>
+    <meta name="description"
+        content="Especialistas em automação industrial, elétrica e venda de equipamentos de alta tecnologia. Solicite seu orçamento agora.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav id="navbar">
+        <div class="container">
+            <a href="#" class="logo">SE7<span>ENGEN</span></a>
+            <ul class="nav-links" style="align-items: center;">
+                <li>
+                    <a href="dashboard.html#cart" class="cart-link" id="navCart" title="Meu Carrinho"
+                        style="margin-right: 0;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8" cy="21" r="1"></circle>
+                            <circle cx="19" cy="21" r="1"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.12">
+                            </path>
+                        </svg>
+                        <span class="cart-badge">0</span>
+                    </a>
+                </li>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#quote">Orçamentos</a></li>
+                <li><a href="shop.html">Equipamentos</a></li>
+                <li><a href="#about">Sobre</a></li>
+            </ul>
+            <div class="nav-auth" style="display: flex; align-items: center;">
+                <button id="openAuth" class="btn btn-outline" style="margin-right: 1rem;">Login / Cadastro</button>
+                <a href="#quote" class="btn btn-primary">Solicitar Orçamento</a>
+            </div>
+        </div>
+    </nav>
+
+    <header id="home" class="hero"
+        style="background-image: url('public/industrial_automation_hero_webp_1769464630093.png');">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Transformando a Indústria com <span>Automação Inteligente</span></h1>
+                <p>Soluções completas em engenharia elétrica e industrial. Do projeto à manutenção, garantimos
+                    eficiência e alta performance para o seu negócio.</p>
+                <div class="hero-btns">
+                    <a href="#quote" class="btn btn-primary">Ver Nossos Serviços</a>
+                    <a href="shop.html" class="btn btn-outline" style="margin-left: 1rem;">Loja de Equipamentos</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="quote">
+        <div class="container">
+            <div class="section-title">
+                <h2>Solicite seu Orçamento</h2>
+            </div>
+            <div class="quote-grid">
+                <div class="quote-text">
+                    <h3>Projetos Sob Medida</h3>
+                    <p>Nossa equipe de engenharia está pronta para desenvolver a solução ideal para seu parque
+                        industrial. Preencha o formulário e entraremos em contato em até 24 horas.</p>
+                    <ul style="margin-top: 2rem;">
+                        <li style="margin-bottom: 1rem;">✅ Montagem de Painéis Elétricos</li>
+                        <li style="margin-bottom: 1rem;">✅ Programação de PLC e IHM</li>
+                        <li style="margin-bottom: 1rem;">✅ Automação de Processos</li>
+                        <li style="margin-bottom: 1rem;">✅ Manutenção Industrial</li>
+                    </ul>
+                </div>
+                <div class="quote-form glass">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Nome Completo</label>
+                            <input type="text" id="name" required placeholder="Seu nome">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail Corporativo</label>
+                            <input type="email" id="email" required placeholder="email@empresa.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="service">Serviço de Interesse</label>
+                            <select id="service">
+                                <option value="paineis">Montagem de Painéis</option>
+                                <option value="programacao">Programação PLC/IHM</option>
+                                <option value="consultoria">Consultoria Técnica</option>
+                                <option value="manutencao">Manutenção Corretiva</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Detalhes do Projeto</label>
+                            <textarea id="message" rows="4"
+                                placeholder="Descreva brevemente sua necessidade"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar Solicitação</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="products" style="background-color: rgba(255,255,255,0.02);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Equipamentos de Automação</h2>
+            </div>
+            <div class="product-grid">
+                <div class="product-card glass">
+                    <div class="product-image">
+                        <img src="public/plc_controller_webp_1769464690191.png" alt="PLC S7-1500">
+                    </div>
+                    <div class="product-info">
+                        <h3>CLP Siemens S7-1500</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Controlador lógico programável de alta
+                            performance para aplicações complexas.</p>
+                        <div class="product-price">R$ 5.490,00</div>
+                        <button class="btn btn-outline" style="width: 100%;">Comprar Agora</button>
+                    </div>
+                </div>
+
+                <div class="product-card glass">
+                    <div class="product-image">
+                        <img src="public/electrical_panel_webp_1769464752729.png" alt="Inversores de Frequência">
+                    </div>
+                    <div class="product-info">
+                        <h3>Módulo de Expansão I/O</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Módulo digital para expansão de
+                            entradas e saídas em sistemas de automação.</p>
+                        <div class="product-price">R$ 1.250,00</div>
+                        <button class="btn btn-outline" style="width: 100%;">Comprar Agora</button>
+                    </div>
+                </div>
+
+                <div class="product-card glass">
+                    <div class="product-image">
+                        <img src="public/industrial_automation_hero_webp_1769464630093.png" alt="HMI Touch">
+                    </div>
+                    <div class="product-info">
+                        <h3>IHM Touch 10" Pro</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Interface Homem-Máquina com tela
+                            sensível ao toque de alta definição.</p>
+                        <div class="product-price">R$ 3.800,00</div>
+                        <button class="btn btn-outline" style="width: 100%;">Comprar Agora</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="about">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a href="#" class="logo">SE7<span>ENGEN</span></a>
+                    <p style="color: var(--text-muted); margin-top: 1rem;">Excelência em automação elétrica e
+                        industrial. Elevando o padrão da tecnologia brasileira.</p>
+                </div>
+                <div>
+                    <h4>Links Úteis</h4>
+                    <ul style="margin-top: 1rem; color: var(--text-muted);">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#quote">Serviços</a></li>
+                        <li><a href="#products">Equipamentos</a></li>
+                        <li><a href="admin.html" style="opacity: 0.5; font-size: 0.8rem;">Área Restrita</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contato</h4>
+                    <ul style="margin-top: 1rem; color: var(--text-muted);">
+                        <li>📍 Av. Industrial, 1234 - São Paulo</li>
+                        <li>📞 (11) 4002-8922</li>
+                        <li>✉️ contato@se7engen.com.br</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 SE7ENGEN AUTOMACAO - Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content glass">
+            <span class="close-modal">&times;</span>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="signup">Cadastro</div>
+            </div>
+
+            <!-- Google Login Button -->
+            <button id="googleLogin" class="btn btn-outline"
+                style="width: 100%; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 18px;">
+                Entrar com Google
+            </button>
+
+            <div
+                style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.8rem; position: relative;">
+                <span style="background: var(--bg-card); padding: 0 10px; position: relative; z-index: 1;">ou use seu
+                    e-mail</span>
+                <div
+                    style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--glass-border);">
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">E-mail</label>
+                    <input type="email" id="loginEmail" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Senha</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPass" required placeholder="••••••••">
+                        <button type="button" class="password-toggle" aria-label="Mostrar senha">
+                            <i class="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signupName">Nome Completo</label>
+                    <input type="text" id="signupName" required placeholder="Seu nome">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">E-mail</label>
+                    <input type="email" id="signupEmail" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="signupPass">Senha</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupPass" required placeholder="Crie uma senha">
+                        <button type="button" class="password-toggle" aria-label="Mostrar senha">
+                            <i class="eye-icon"></i>
+                        </button>
+                    </div>
+                    <div class="strength-meter">
+                        <div class="strength-bar"></div>
+                        <span class="strength-text">Força da senha</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPass">Confirmar Senha</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupConfirmPass" required placeholder="Repita a senha">
+                        <button type="button" class="password-toggle" aria-label="Mostrar senha">
+                            <i class="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Conta</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>

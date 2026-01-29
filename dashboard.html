@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Painel | SE7ENGEN AUTOMACAO</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+
+<body style="background-color: var(--bg-dark);">
+
+    <nav id="navbar" class="scrolled">
+        <div class="container">
+            <a href="index.html" class="logo">SE7<span>ENGEN</span></a>
+            <ul class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+                <li>
+                    <a href="#cart" onclick="showTab('cart')" class="cart-link" id="navCart" title="Meu Carrinho"
+                        style="margin-right: 0;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8" cy="21" r="1"></circle>
+                            <circle cx="19" cy="21" r="1"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.56-7.43H5.12">
+                            </path>
+                        </svg>
+                        <span class="cart-badge">0</span>
+                    </a>
+                </li>
+                <li><a href="index.html">Início</a></li>
+                <li><button id="logoutBtn" class="btn btn-outline" style="border: none;">Sair</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="userDashboard" class="dashboard active" style="margin-top: 100px;">
+        <div class="container">
+            <header class="admin-header">
+                <div>
+                    <h1 id="userName">Bem-vindo!</h1>
+                    <p id="userEmail" style="color: var(--text-muted);"></p>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card glass" onclick="showTab('quotes')">
+                    <h4>Meus Orçamentos</h4>
+                    <div id="quoteCount" class="value">0</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('cart')">
+                    <h4>Carrinho</h4>
+                    <div id="cartCount" class="value">0</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('orders')">
+                    <h4>Pedidos Feitos</h4>
+                    <div id="orderCount" class="value">0</div>
+                </div>
+                <!-- New Settings Card -->
+                <div class="stat-card glass" onclick="showTab('settings')"
+                    style="border-top: 2px solid var(--primary);">
+                    <h4>Meus Dados</h4>
+                    <div class="value">⚙️</div>
+                </div>
+            </div>
+
+            <div id="dashboardContent" class="admin-content">
+                <!-- Content will be swapped here -->
+                <div id="quotesSection" class="tab-content">
+                    <h3>Meus Orçamentos</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Serviço</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userQuotesBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="cartSection" class="tab-content" style="display: none;">
+                    <h3>Carrinho de Compras</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;"><input type="checkbox" id="selectAllCart"
+                                        checked title="Selecionar Todos"></th>
+                                <th>Imagem</th>
+                                <th>Produto</th>
+                                <th>Preço Uni.</th>
+                                <th>Total</th>
+                                <th style="text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userCartBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 2rem; text-align: right;">
+                        <button id="checkoutBtn" class="btn btn-primary" onclick="handleCheckout()">Finalizar
+                            Compra</button>
+                    </div>
+                </div>
+
+                <div id="ordersSection" class="tab-content" style="display: none;">
+                    <h3>Histórico de Pedidos</h3>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID do Pedido</th>
+                                <th>Data</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userOrdersBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Nenhum pedido realizado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- New Profile Settings Section -->
+                <div id="settingsSection" class="tab-content" style="display: none;">
+                    <h3>Atualizar Meus Dados</h3>
+                    <div class="glass" style="padding: 2.5rem; margin-top: 1.5rem;">
+                        <form id="profileForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label>Nome Completo</label>
+                                    <input type="text" id="profileName" required placeholder="Seu Nome">
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone / WhatsApp</label>
+                                    <input type="text" id="profilePhone" placeholder="(00) 00000-0000">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Nome da Empresa (se aplicável)</label>
+                                    <input type="text" id="profileCompany" placeholder="SE7ENGEN LTDA">
+                                </div>
+                                <div class="form-group">
+                                    <label>País</label>
+                                    <input type="text" id="profileCountry" placeholder="Brasil">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP</label>
+                                    <input type="text" id="profileZip" placeholder="00000-000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Estado (UF)</label>
+                                    <select id="profileState">
+                                        <option value="">Selecione</option>
+                                        <option value="AC">AC</option>
+                                        <option value="AL">AL</option>
+                                        <option value="AP">AP</option>
+                                        <option value="AM">AM</option>
+                                        <option value="BA">BA</option>
+                                        <option value="CE">CE</option>
+                                        <option value="DF">DF</option>
+                                        <option value="ES">ES</option>
+                                        <option value="GO">GO</option>
+                                        <option value="MA">MA</option>
+                                        <option value="MT">MT</option>
+                                        <option value="MS">MS</option>
+                                        <option value="MG">MG</option>
+                                        <option value="PA">PA</option>
+                                        <option value="PB">PB</option>
+                                        <option value="PR">PR</option>
+                                        <option value="PE">PE</option>
+                                        <option value="PI">PI</option>
+                                        <option value="RJ">RJ</option>
+                                        <option value="RN">RN</option>
+                                        <option value="RS">RS</option>
+                                        <option value="RO">RO</option>
+                                        <option value="RR">RR</option>
+                                        <option value="SC">SC</option>
+                                        <option value="SP">SP</option>
+                                        <option value="SE">SE</option>
+                                        <option value="TO">TO</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="profileCity" placeholder="São Paulo">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Rua / Logradouro</label>
+                                    <input type="text" id="profileStreet" placeholder="Av. Industrial">
+                                </div>
+                                <div class="form-group">
+                                    <label>Número</label>
+                                    <input type="text" id="profileNumber" placeholder="123">
+                                </div>
+                                <div class="form-group">
+                                    <label>Bairro</label>
+                                    <input type="text" id="profileNeighborhood" placeholder="Centro">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Observações de Endereço (Ref., Bloco, Apt.)</label>
+                                    <input type="text" id="profileAddressNotes" placeholder="Próximo ao mercado...">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Salvar
+                                Alterações</button>
+                            <p id="profileStatus" style="margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping Address Modal -->
+    <div id="shippingModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 600px;">
+            <span class="close-modal" id="closeShippingModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2>Endereço de Entrega</h2>
+                <p style="color: var(--text-muted);">Confirme onde deseja receber seu pedido</p>
+            </div>
+
+            <div id="savedAddressSection"
+                style="display: none; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 8px; background: rgba(0, 210, 255, 0.05);">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Endereço Salvo</h4>
+                <p id="savedAddressText" style="font-size: 0.9rem; line-height: 1.6;"></p>
+                <button id="useSavedAddressBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Usar este
+                    Endereço</button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 1.5rem; position: relative;" id="addressDivider">
+                <span
+                    style="background: var(--bg-card); padding: 0 10px; position: relative; z-index: 1; color: var(--text-muted);">ou
+                    use um novo endereço</span>
+                <div
+                    style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--glass-border);">
+                </div>
+            </div>
+
+            <form id="newAddressForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" id="shipZip" required placeholder="00000-000">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado (UF)</label>
+                        <input type="text" id="shipState" required placeholder="Ex: SP">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Cidade</label>
+                        <input type="text" id="shipCity" required placeholder="Sua Cidade">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Rua / Logradouro</label>
+                        <input type="text" id="shipStreet" required placeholder="Av. Principal">
+                    </div>
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" id="shipNumber" required placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label>Bairro</label>
+                        <input type="text" id="shipNeighborhood" required placeholder="Centro">
+                    </div>
+                </div>
+                <button type="submit" id="calculateShippingBtn" class="btn btn-outline"
+                    style="width: 100%; margin-top: 1.5rem;">Calcular Opções de Entrega</button>
+            </form>
+
+            <div id="shippingOptionsSection" style="display: none; margin-top: 2rem;">
+                <h4 style="margin-bottom: 1rem;">Escolha o Tipo de Envio</h4>
+                <div id="shippingOptionsList" style="display: grid; gap: 10px;">
+                    <!-- Quotes will be loaded here -->
+                </div>
+            </div>
+
+            <div id="paymentSection" style="display: none; margin-top: 2rem;">
+                <h4 style="margin-bottom: 1rem;">Escolha a Forma de Pagamento</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="payment-option glass" id="payPix"
+                        style="padding: 1.5rem; text-align: center; cursor: pointer; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📱 PIX</div>
+                        <small style="color: var(--text-muted);">Aprovação Imediata</small>
+                    </div>
+                    <div class="payment-option glass" id="payCard"
+                        style="padding: 1.5rem; text-align: center; cursor: pointer; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💳 Cartão</div>
+                        <small style="color: var(--text-muted);">Até 12x</small>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div id="orderFinalSummary"
+                style="display: none; margin-top: 2rem; padding: 1.5rem; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Subtotal:</span>
+                    <span id="summarySubtotal">R$ 0,00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Frete (<span id="summaryMethod">...</span>):</span>
+                    <span id="summaryShipping">R$ 0,00</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem; color: var(--primary); margin-top: 1rem;">
+                    <span>Total:</span>
+                    <span id="summaryTotal">R$ 0,00</span>
+                </div>
+                <button id="confirmOrderBtn" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Confirmar
+                    e Finalizar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, getProductImage } from './supabase.js'
+
+        // Initialize Mercado Pago
+        const mp = new MercadoPago('APP_USR-3f5b70d8-b344-461a-900e-b8eabbb4e40d');
+
+        const userNameEl = document.getElementById('userName');
+        const userEmailEl = document.getElementById('userEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileForm = document.getElementById('profileForm');
+        const profileStatus = document.getElementById('profileStatus');
+
+        async function initDashboard() {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            userEmailEl.innerText = user.email;
+
+            // Get complete profile
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                userNameEl.innerText = `Olá, ${profile.full_name || user.user_metadata?.full_name || 'Usuário'}!`;
+
+                // Populate form fields
+                document.getElementById('profileName').value = profile.full_name || '';
+                document.getElementById('profilePhone').value = profile.phone || '';
+                document.getElementById('profileCompany').value = profile.company_name || '';
+
+                // Detailed Address
+                document.getElementById('profileCountry').value = profile.country || 'Brasil';
+                document.getElementById('profileZip').value = profile.zip_code || '';
+                document.getElementById('profileState').value = profile.state || '';
+                document.getElementById('profileCity').value = profile.city || '';
+                document.getElementById('profileStreet').value = profile.street || '';
+                document.getElementById('profileNumber').value = profile.number || '';
+                document.getElementById('profileNeighborhood').value = profile.neighborhood || '';
+                document.getElementById('profileAddressNotes').value = profile.address_notes || '';
+            } else {
+                userNameEl.innerText = `Olá, ${user.user_metadata?.full_name || 'Usuário'}!`;
+                document.getElementById('profileName').value = user.user_metadata?.full_name || '';
+            }
+
+            // ZIP Code Auto-complete (ViaCEP)
+            const zipInput = document.getElementById('profileZip');
+            if (zipInput) {
+                zipInput.addEventListener('blur', async () => {
+                    const cep = zipInput.value.replace(/\D/g, '');
+                    if (cep.length === 8) {
+                        try {
+                            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                            const data = await response.json();
+
+                            if (data.erro) {
+                                zipInput.style.borderColor = '#ff4d4d';
+                                alert('CEP não encontrado! Por favor, verifique o número digitado.');
+                                // Limpa os campos para evitar confusão
+                                document.getElementById('profileStreet').value = '';
+                                document.getElementById('profileNeighborhood').value = '';
+                                document.getElementById('profileCity').value = '';
+                                document.getElementById('profileState').value = '';
+                            } else {
+                                zipInput.style.borderColor = 'var(--glass-border)';
+                                document.getElementById('profileStreet').value = data.logradouro;
+                                document.getElementById('profileNeighborhood').value = data.bairro;
+                                document.getElementById('profileCity').value = data.localidade;
+                                document.getElementById('profileState').value = data.uf;
+                                document.getElementById('profileNumber').focus();
+                            }
+                        } catch (err) {
+                            console.error('Erro ao buscar CEP:', err);
+                            alert('Erro ao validar o CEP. Tente novamente mais tarde.');
+                        }
+                    } else if (cep.length > 0) {
+                        zipInput.style.borderColor = '#ff4d4d';
+                        alert('Formato de CEP inválido. Use 8 dígitos (ex: 01001000).');
+                    }
+                });
+
+                zipInput.addEventListener('input', () => {
+                    zipInput.style.borderColor = 'var(--glass-border)';
+                });
+            }
+
+            loadQuotes(user.id);
+            loadCart(user.id);
+            loadOrders(user.id);
+
+            // Handle URL Hash (for direct link to cart)
+            if (window.location.hash === '#cart') {
+                showTab('cart');
+            }
+        }
+
+        // Handle profile update form
+        if (profileForm) {
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { data: { user } } = await supabase.auth.getUser();
+
+                const updates = {
+                    id: user.id,
+                    full_name: document.getElementById('profileName').value,
+                    phone: document.getElementById('profilePhone').value,
+                    company_name: document.getElementById('profileCompany').value,
+
+                    // Detailed Address
+                    country: document.getElementById('profileCountry').value,
+                    zip_code: document.getElementById('profileZip').value,
+                    state: document.getElementById('profileState').value,
+                    city: document.getElementById('profileCity').value,
+                    street: document.getElementById('profileStreet').value,
+                    number: document.getElementById('profileNumber').value,
+                    neighborhood: document.getElementById('profileNeighborhood').value,
+                    address_notes: document.getElementById('profileAddressNotes').value,
+
+                    updated_at: new Date()
+                };
+
+                const { error } = await supabase.from('profiles').upsert(updates);
+
+                profileStatus.style.display = 'block';
+                if (error) {
+                    profileStatus.innerText = 'Erro ao atualizar: ' + error.message;
+                    profileStatus.style.color = '#ff4d4d';
+                } else {
+                    profileStatus.innerText = 'Dados atualizados com sucesso! ✨';
+                    profileStatus.style.color = '#00ff88';
+                    userNameEl.innerText = `Olá, ${updates.full_name.split(' ')[0]}!`;
+                    setTimeout(() => { profileStatus.style.display = 'none'; }, 3000);
+                }
+            });
+        }
+
+        async function loadQuotes(userId) {
+            const { data: quotes } = await supabase
+                .from('quotes')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            const tbody = document.getElementById('userQuotesBody');
+            document.getElementById('quoteCount').innerText = quotes?.length || 0;
+
+            if (quotes && quotes.length > 0) {
+                tbody.innerHTML = quotes.map(q => `
+                    <tr>
+                        <td>${q.service}</td>
+                        <td>${new Date(q.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td><span class="status-badge status-${q.status.toLowerCase()}">${q.status}</span></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Você ainda não solicitou orçamentos.</td></tr>';
+            }
+        }
+
+        window.removeFromCart = async (cartId) => {
+            if (!confirm('Remover este item do carrinho?')) return;
+            const { error } = await supabase.from('cart').delete().eq('id', cartId);
+            if (error) alert('Erro ao remover item: ' + error.message);
+            else {
+                const { data: { user } } = await supabase.auth.getUser();
+                loadCart(user.id);
+            }
+        };
+
+        window.updateCartQuantity = async (cartId, newQty) => {
+            if (newQty < 1) return;
+            const { error } = await supabase.from('cart').update({ quantity: newQty }).eq('id', cartId);
+            if (error) console.error('Erro ao atualizar quantidade:', error);
+            else {
+                const { data: { user } } = await supabase.auth.getUser();
+                loadCart(user.id);
+            }
+        };
+
+        async function loadCart(userId) {
+            const { data: cartItems } = await supabase
+                .from('cart')
+                .select('*, products(*)')
+                .eq('user_id', userId);
+
+            const tbody = document.getElementById('userCartBody');
+            const cartCountEl = document.getElementById('cartCount');
+            cartCountEl.innerText = cartItems?.length || 0;
+
+            if (cartItems && cartItems.length > 0) {
+                const renderCart = () => {
+                    let totalCart = 0;
+                    let html = cartItems.map((item, index) => {
+                        const itemTotal = item.products.price * item.quantity;
+                        const isSelected = item.selected !== false; // Default to true if undefined
+                        if (isSelected) totalCart += itemTotal;
+
+                        return `
+                        <tr data-id="${item.id}">
+                            <td style="text-align: center;">
+                                <input type="checkbox" class="cart-item-check" data-index="${index}" ${isSelected ? 'checked' : ''}>
+                            </td>
+                            <td>
+                                <img src="${getProductImage(item.products.image_url, item.products.id)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                            </td>
+                            <td>
+                                <strong>${item.products.name}</strong><br>
+                                <div style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                                    <button onclick="window.updateCartQuantity('${item.id}', ${item.quantity - 1})" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.75rem;">-</button>
+                                    <span style="min-width: 25px; text-align: center; font-weight: bold;">${item.quantity}</span>
+                                    <button onclick="window.updateCartQuantity('${item.id}', ${item.quantity + 1})" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.75rem;">+</button>
+                                </div>
+                            </td>
+                            <td>R$ ${item.products.price.toFixed(2).replace('.', ',')}</td>
+                            <td>R$ ${itemTotal.toFixed(2).replace('.', ',')}</td>
+                            <td style="text-align: center;">
+                                <button onclick="window.removeFromCart('${item.id}')" class="btn btn-outline btn-small" style="padding: 5px 10px; color: #ff4d4d; border-color: rgba(255,77,77,0.3);" title="Remover">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    `}).join('');
+
+                    // Add Total Row
+                    html += `
+                        <tr style="background: rgba(0, 210, 255, 0.05); font-weight: 700;">
+                            <td colspan="4" style="text-align: right; color: var(--primary);">Total dos Selecionados:</td>
+                            <td colspan="2" style="color: var(--primary);">R$ ${totalCart.toFixed(2).replace('.', ',')}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML = html;
+
+                    // Re-bind events
+                    tbody.querySelectorAll('.cart-item-check').forEach(check => {
+                        check.onchange = (e) => {
+                            const idx = e.target.getAttribute('data-index');
+                            cartItems[idx].selected = e.target.checked;
+                            renderCart();
+                        };
+                    });
+
+                    // Update Checkout Button state
+                    const selectedItems = cartItems.filter(i => i.selected !== false);
+                    const checkoutBtn = document.getElementById('checkoutBtn');
+                    if (checkoutBtn) {
+                        checkoutBtn.disabled = selectedItems.length === 0;
+                        checkoutBtn.innerText = selectedItems.length === 0 ? 'Selecione itens' : `Finalizar Pedido (${selectedItems.length})`;
+                    }
+                };
+
+                renderCart();
+
+                // Select All Logic
+                const selectAll = document.getElementById('selectAllCart');
+                if (selectAll) {
+                    selectAll.onchange = (e) => {
+                        cartItems.forEach(item => item.selected = e.target.checked);
+                        renderCart();
+                    };
+                }
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Seu carrinho está vazio.</td></tr>';
+                const checkoutBtn = document.getElementById('checkoutBtn');
+                if (checkoutBtn) {
+                    checkoutBtn.disabled = true;
+                    checkoutBtn.innerText = 'Carrinho Vazio';
+                }
+            }
+        }
+
+        async function loadOrders(userId) {
+            const { data: orders } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            const tbody = document.getElementById('userOrdersBody');
+            document.getElementById('orderCount').innerText = orders?.length || 0;
+
+            if (orders && orders.length > 0) {
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td>#${o.id.split('-')[0]}</td>
+                        <td>${new Date(o.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td>R$ ${o.total_amount.toFixed(2).replace('.', ',')}</td>
+                        <td><span class="status-badge status-done">${o.status}</span></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum pedido realizado.</td></tr>';
+            }
+        }
+
+        window.handleCheckout = async function () {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // Get selected IDs from checkboxes in the UI
+            const selectedChecks = Array.from(document.querySelectorAll('.cart-item-check:checked'));
+            const selectedIds = selectedChecks.map(c => c.closest('tr').getAttribute('data-id'));
+
+            if (selectedIds.length === 0) {
+                alert('Selecione pelo menos um item para finalizar o pedido!');
+                return;
+            }
+
+            const { data: allCartItems } = await supabase
+                .from('cart')
+                .select('*, products(*)')
+                .eq('user_id', user.id);
+
+            const cartItems = allCartItems.filter(item => selectedIds.includes(item.id));
+
+            if (!cartItems || cartItems.length === 0) {
+                alert('Itens selecionados não encontrados!');
+                return;
+            }
+
+            // 1. Fetch Profile for saved address
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+
+            const shippingModal = document.getElementById('shippingModal');
+            const savedSection = document.getElementById('savedAddressSection');
+            const savedText = document.getElementById('savedAddressText');
+            const divider = document.getElementById('addressDivider');
+            const newForm = document.getElementById('newAddressForm');
+            const closeBtn = document.getElementById('closeShippingModal');
+
+            // Reset Form
+            newForm.reset();
+
+            // Check if user has saved address
+            const hasSaved = profile && profile.zip_code && profile.street;
+            if (hasSaved) {
+                savedSection.style.display = 'block';
+                divider.style.display = 'block';
+                savedText.innerText = `${profile.street}, ${profile.number}${profile.address_notes ? ' (' + profile.address_notes + ')' : ''}\n${profile.neighborhood}, ${profile.city} - ${profile.state}\nCEP: ${profile.zip_code}`;
+            } else {
+                savedSection.style.display = 'none';
+                divider.style.display = 'none';
+            }
+
+            shippingModal.classList.add('active');
+
+            // Close Modal Logic
+            closeBtn.onclick = () => shippingModal.classList.remove('active');
+
+            // Function to perform final order insertion
+            const processOrder = async (shippingAddress) => {
+                const btn = document.getElementById('checkoutBtn');
+                btn.disabled = true;
+                btn.innerText = 'Processando...';
+                shippingModal.classList.remove('active');
+
+                try {
+                    const total = cartItems.reduce((acc, item) => acc + (item.products.price * item.quantity), 0);
+
+                    const { data: order, error: orderErr } = await supabase.from('orders').insert({
+                        user_id: user.id,
+                        total_amount: total,
+                        shipping_address: shippingAddress,
+                        contact_phone: shippingAddress.phone || profile?.phone
+                    }).select().single();
+
+                    if (orderErr) throw orderErr;
+
+                    const orderItemsUpdate = cartItems.map(item => ({
+                        order_id: order.id,
+                        product_id: item.product_id,
+                        variation_id: item.variation_id,
+                        product_name: item.products.name,
+                        quantity: item.quantity,
+                        price_at_purchase: item.products.price
+                    }));
+
+                    const { error: itemsErr } = await supabase.from('order_items').insert(orderItemsUpdate);
+                    if (itemsErr) throw itemsErr;
+
+                    const { error: clearErr } = await supabase.from('cart').delete().in('id', selectedIds);
+                    if (clearErr) throw clearErr;
+
+                    alert('Pedido realizado com sucesso! 🎉');
+                    loadCart(user.id);
+                    loadOrders(user.id);
+                    if (window.updateCartUI) window.updateCartUI();
+
+                } catch (err) {
+                    console.error('Erro no checkout:', err);
+                    alert('Erro ao finalizar compra: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'Finalizar Compra';
+                }
+            };
+
+            // --- MELHOR ENVIO INTEGRATION ---
+            const ORIGIN_CEP = "83601120";
+            let selectedShipping = null;
+
+            async function getShippingQuotes(destCep) {
+                const optionsList = document.getElementById('shippingOptionsList');
+                const optionsSection = document.getElementById('shippingOptionsSection');
+                const finalSummary = document.getElementById('orderFinalSummary');
+
+                optionsSection.style.display = 'block';
+                finalSummary.style.display = 'none';
+                optionsList.innerHTML = '<p style="text-align: center;">Buscando melhores fretes...</p>';
+
+                const productsForCalc = cartItems.map(item => ({
+                    id: item.product_id,
+                    width: item.products.width || 11,
+                    height: item.products.height || 17,
+                    length: item.products.length || 11,
+                    weight: item.products.weight || 0.3,
+                    insurance_value: item.products.price,
+                    quantity: item.quantity
+                }));
+
+                // --- CHECK FREE SHIPPING RULES FIRST ---
+                try {
+                    const cleanedCep = destCep.replace(/\D/g, '');
+                    const { data: rules } = await supabase.from('free_shipping_rules').select('*');
+
+                    const matchedRule = rules?.find(r => {
+                        const pattern = r.cep_pattern.replace(/\D/g, '').replace('%', '.*');
+                        const regex = new RegExp(`^${pattern}`);
+                        return regex.test(cleanedCep);
+                    });
+
+                    if (matchedRule) {
+                        displayQuotes([{
+                            name: matchedRule.label || 'Frete Grátis',
+                            price: 0,
+                            delivery_time: 'A combinar',
+                            id: 'free_shipping',
+                            is_free: true
+                        }]);
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Erro ao verificar regras de frete grátis:", err);
+                }
+
+                try {
+                    // Note: In a real app, this should go through a proxy to hide the Token
+                    // Using a placeholder for now.
+                    const MELHOR_ENVIO_TOKEN = "SEU_TOKEN_AQUI";
+
+                    // Simulating API call if no token provided
+                    if (MELHOR_ENVIO_TOKEN === "SEU_TOKEN_AQUI") {
+                        console.warn("Utilizando simulação de frete. Configure seu Token do Melhor Envio.");
+                        await new Promise(r => setTimeout(r, 1000));
+                        displayQuotes([
+                            { name: 'PAC (Correios)', price: 25.40, delivery_time: 8, id: 1 },
+                            { name: 'Sedex (Correios)', price: 42.10, delivery_time: 2, id: 2 },
+                            { name: 'Jadlog .Package', price: 28.90, delivery_time: 5, id: 3 }
+                        ]);
+                        return;
+                    }
+
+                    const response = await fetch('https://melhorenvio.com.br/api/v2/me/shipment/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${MELHOR_ENVIO_TOKEN}`
+                        },
+                        body: JSON.stringify({
+                            from: { postal_code: ORIGIN_CEP },
+                            to: { postal_code: destCep.replace(/\D/g, '') },
+                            products: productsForCalc
+                        })
+                    });
+
+                    const quotes = await response.json();
+                    if (!Array.isArray(quotes)) throw new Error("Erro na cotação");
+                    displayQuotes(quotes.filter(q => !q.error));
+
+                } catch (err) {
+                    optionsList.innerHTML = '<p style="color: #ff4d4d;">Erro ao calcular frete. Verifique o CEP.</p>';
+                }
+            }
+
+            function displayQuotes(quotes) {
+                const optionsList = document.getElementById('shippingOptionsList');
+                optionsList.innerHTML = '';
+
+                quotes.forEach(quote => {
+                    const div = document.createElement('div');
+                    div.className = 'glass';
+                    div.style.cssText = 'padding: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); transition: 0.3s;';
+                    div.onmouseover = () => div.style.borderColor = 'var(--primary)';
+                    div.onmouseout = () => div.style.borderColor = 'var(--glass-border)';
+
+                    div.onclick = () => {
+                        selectedShipping = {
+                            method: quote.name || quote.company?.name,
+                            price: parseFloat(quote.custom_price || quote.price),
+                            details: quote
+                        };
+                        showFinalSummary();
+                    };
+
+                    div.innerHTML = `
+                        <div>
+                            <strong>${quote.name || quote.company?.name}</strong><br>
+                            <small style="color: var(--text-muted);">Prazo: ${quote.delivery_time} dias úteis</small>
+                        </div>
+                        <div style="color: var(--primary); font-weight: 700;">R$ ${(quote.custom_price || quote.price).toFixed(2).replace('.', ',')}</div>
+                    `;
+                    optionsList.appendChild(div);
+                });
+            }
+
+            function showFinalSummary() {
+                const subtotal = cartItems.reduce((acc, item) => acc + (item.products.price * item.quantity), 0);
+                const total = subtotal + selectedShipping.price;
+
+                document.getElementById('shippingOptionsSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'block'; // Show payment options first
+                document.getElementById('orderFinalSummary').style.display = 'block';
+
+                document.getElementById('summarySubtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+                document.getElementById('summaryMethod').innerText = selectedShipping.method;
+                document.getElementById('summaryShipping').innerText = `R$ ${selectedShipping.price.toFixed(2).replace('.', ',')}`;
+                document.getElementById('summaryTotal').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+                // Auto-select Pix since it's the only option
+                document.getElementById('payPix').click();
+            }
+
+            let selectedPayment = null;
+
+            document.getElementById('payPix').onclick = () => {
+                selectedPayment = 'pix';
+                document.getElementById('payPix').style.borderColor = 'var(--primary)';
+                document.getElementById('confirmOrderBtn').disabled = false;
+                document.getElementById('confirmOrderBtn').innerText = 'Pagar com PIX';
+            };
+
+            // Postponed by user request - Hiding UI for now
+            document.getElementById('payCard').style.display = 'none';
+            /*
+            document.getElementById('payCard').onclick = () => {
+                selectedPayment = 'credit_card';
+                document.getElementById('payCard').style.borderColor = 'var(--primary)';
+                document.getElementById('payPix').style.borderColor = 'var(--glass-border)';
+                document.getElementById('confirmOrderBtn').disabled = false;
+                document.getElementById('confirmOrderBtn').innerText = 'Pagar com Cartão';
+            };
+            */
+
+            // Handle Transitions
+            document.getElementById('useSavedAddressBtn').onclick = () => {
+                document.getElementById('savedAddressSection').style.display = 'none';
+                document.getElementById('addressDivider').style.display = 'none';
+                document.getElementById('newAddressForm').style.display = 'none';
+                getShippingQuotes(profile.zip_code);
+            };
+
+            newForm.onsubmit = (e) => {
+                e.preventDefault();
+                const destCep = document.getElementById('shipZip').value;
+                document.getElementById('savedAddressSection').style.display = 'none';
+                document.getElementById('addressDivider').style.display = 'none';
+                document.getElementById('newAddressForm').style.display = 'none';
+                getShippingQuotes(destCep);
+            };
+
+            document.getElementById('confirmOrderBtn').onclick = () => {
+                const address = (document.getElementById('newAddressForm').style.display === 'none') ? profile : {
+                    zip_code: document.getElementById('shipZip').value,
+                    state: document.getElementById('shipState').value,
+                    city: document.getElementById('shipCity').value,
+                    street: document.getElementById('shipStreet').value,
+                    number: document.getElementById('shipNumber').value,
+                    neighborhood: document.getElementById('shipNeighborhood').value,
+                };
+
+                // Remove modal and start processing
+                shippingModal.classList.remove('active');
+                processOrderWithShipping(address, selectedShipping, selectedPayment);
+            };
+
+            const processOrderWithShipping = async (shippingAddress, shippingData, paymentMethod) => {
+                const btn = document.getElementById('confirmOrderBtn');
+                btn.disabled = true;
+                btn.innerText = 'Processando...';
+
+                try {
+                    const subtotal = cartItems.reduce((acc, item) => acc + (item.products.price * item.quantity), 0);
+                    const total = subtotal + shippingData.price;
+
+                    const { data: order, error: orderErr } = await supabase.from('orders').insert({
+                        user_id: user.id,
+                        total_amount: total,
+                        shipping_address: shippingAddress,
+                        contact_phone: shippingAddress.phone || profile?.phone,
+                        shipping_cost: shippingData.price,
+                        shipping_method: shippingData.method,
+                        shipping_details: shippingData.details,
+                        payment_method: paymentMethod,
+                        payment_status: 'pending'
+                    }).select().single();
+
+                    if (orderErr) throw orderErr;
+
+                    // --- REAL MERCADO PAGO INTEGRATION ---
+                    // --- SMART PIX MANUAL INTEGRATION ---
+                    try {
+                        const { PixHelper } = await import('./pix_helper.js');
+                        // Using provided Pix Key
+                        const pix = new PixHelper('59213331000152', 'SE7ENGEN AUTOMACAO', 'SAO PAULO');
+                        const payload = pix.generatePayload(total);
+
+                        // Save Order as Pending FIRST
+                        const orderItemsUpdate = cartItems.map(item => ({
+                            order_id: order.id,
+                            product_id: item.product_id,
+                            variation_id: item.variation_id,
+                            product_name: item.products.name,
+                            quantity: item.quantity,
+                            price_at_purchase: item.products.price
+                        }));
+
+                        const { error: itemsErr } = await supabase.from('order_items').insert(orderItemsUpdate);
+                        if (itemsErr) throw itemsErr;
+
+                        const { error: clearErr } = await supabase.from('cart').delete().eq('user_id', user.id);
+                        if (clearErr) throw clearErr;
+
+                        // Show Modal with QR Code and Instructions
+                        const modalHtml = `
+                            <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; justify-content:center; align-items:center;">
+                                <div class="glass" style="padding:2rem; max-width:400px; text-align:center; position:relative;">
+                                    <h2 style="color:var(--primary); margin-bottom:1rem;">Pagamento via Pix</h2>
+                                    <p style="margin-bottom:1rem;">Valor Exato: <strong>R$ ${total.toFixed(2).replace('.', ',')}</strong></p>
+                                    
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payload)}" 
+                                         style="border-radius:8px; margin-bottom:1rem; border:2px solid white;">
+                                    
+                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Código Copia e Cola:</p>
+                                    <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:4px; margin-bottom:1rem; overflow-wrap:anywhere; user-select:all; font-family:monospace; font-size:0.7rem;">
+                                        ${payload}
+                                    </div>
+                                    
+                                    <button id="btnConfirmPay" class="btn btn-primary" style="width:100%; margin-bottom:0.5rem;">
+                                        ✅ Já paguei! Enviar Comprovante
+                                    </button>
+                                    <button onclick="window.location.reload()" class="btn btn-outline" style="width:100%;">Fechar</button>
+                                </div>
+                            </div>
+                        `;
+
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                        document.getElementById('btnConfirmPay').onclick = () => {
+                            const msg = `Olá! Acabei de fazer o pedido #${order.id} no valor de R$ ${total.toFixed(2)} via Pix. Segue o comprovante:`;
+                            const waLink = `https://wa.me/551140028922?text=${encodeURIComponent(msg)}`;
+                            window.open(waLink, '_blank');
+                            window.location.reload();
+                        };
+
+                        // Stop execution here, let user interact with modal
+                        return;
+
+                    } catch (err) {
+                        console.error("Erro Smart Pix:", err);
+                        alert("Erro ao gerar Pix: " + err.message);
+                    }
+
+                    const orderItemsUpdate = cartItems.map(item => ({
+                        order_id: order.id,
+                        product_id: item.product_id,
+                        variation_id: item.variation_id,
+                        product_name: item.products.name,
+                        quantity: item.quantity,
+                        price_at_purchase: item.products.price
+                    }));
+
+                    const { error: itemsErr } = await supabase.from('order_items').insert(orderItemsUpdate);
+                    if (itemsErr) throw itemsErr;
+
+                    const { error: clearErr } = await supabase.from('cart').delete().eq('user_id', user.id);
+                    if (clearErr) throw clearErr;
+
+                    alert('Pedido realizado com sucesso! 🎉');
+
+                    document.getElementById('paymentSection').style.display = 'none';
+                    document.getElementById('orderFinalSummary').style.display = 'none';
+
+                    loadCart(user.id);
+                    loadOrders(user.id);
+                    if (window.updateCartUI) window.updateCartUI();
+
+                } catch (err) {
+                    console.error('Erro no checkout:', err);
+                    alert('Erro ao finalizar compra: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'Confirmar e Finalizar Pedido';
+                }
+            };
+
+            // Zip Auto-complete for checkout modal
+            const shipZipInput = document.getElementById('shipZip');
+            shipZipInput.onblur = async () => {
+                const cep = shipZipInput.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await resp.json();
+                    if (!data.erro) {
+                        document.getElementById('shipStreet').value = data.logradouro;
+                        document.getElementById('shipNeighborhood').value = data.bairro;
+                        document.getElementById('shipCity').value = data.localidade;
+                        document.getElementById('shipState').value = data.uf;
+                    }
+                }
+            };
+        };
+
+        window.showTab = function (tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`${tabName}Section`).style.display = 'block';
+        }
+
+        logoutBtn.onclick = async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        initDashboard();
+    </script>
+</body>
+
+</html>

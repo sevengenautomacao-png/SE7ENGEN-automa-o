@@ -1,0 +1,20 @@
+{
+  "name": "workspacea",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "supabase": "^2.72.9",
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.93.1"
+  }
+}

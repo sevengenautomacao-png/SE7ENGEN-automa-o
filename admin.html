@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin | SE7ENGEN AUTOMACAO</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body style="background-color: var(--bg-dark);">
+    <style>
+        .admin-card {
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+    </style>
+
+    <!-- Admin Login -->
+    <div id="adminLogin" class="admin-login-wrapper">
+        <div class="modal-content glass" style="display: block; position: relative; animation: none;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 0.5rem;">Acesso Restrito</h2>
+                <p style="color: var(--text-muted);">Painel de Gerenciamento SE7ENGEN</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label>E-mail Administrativo</label>
+                    <input type="email" id="adminEmail" required placeholder="admin@se7engen.com.br">
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="adminPass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar no Painel</button>
+            </form>
+            <p id="loginError" style="color: #ff4d4d; margin-top: 1rem; text-align: center; display: none;">Credenciais
+                inválidas. Tente novamente.</p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="dashboard">
+        <div class="container">
+            <header class="admin-header">
+                <div class="logo">SE7<span>ENGEN</span> <small style="font-size: 0.8rem; color: var(--text-muted);">|
+                        ADMIN</small></div>
+                <button id="logoutAdmin" class="btn btn-outline">Sair do Painel</button>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <h4>Orçamentos Pendentes</h4>
+                    <div id="pendingCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Vendas este Mês</h4>
+                    <div id="totalSales" class="value">R$ 0,00</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Total de Pedidos</h4>
+                    <div id="orderCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass">
+                    <h4>Novos Usuários</h4>
+                    <div id="userCount" class="value">...</div>
+                </div>
+                <div class="stat-card glass" onclick="showTab('shipping')"
+                    style="border-top: 2px solid var(--primary);">
+                    <h4>Regras de Frete</h4>
+                    <div id="shippingRuleCount" class="value">0</div>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Últimas Solicitações (Dados do Supabase)</h3>
+                    <button id="refreshData" class="btn btn-primary btn-small" style="padding: 0.5rem 1rem;">Atualizar
+                        Dados</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Serviço</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotesTableBody">
+                        <!-- Data will be loaded here -->
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Carregando dados...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Categorias</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="newCatName" class="glass" placeholder="Nova Categoria"
+                            style="padding: 0.5rem; border-radius: 4px; border: 1px solid var(--glass-border); color: white;">
+                        <button id="addCategoryBtn" class="btn btn-primary btn-small">Adicionar</button>
+                    </div>
+                </div>
+                <div id="categoriesList" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- Categories will be loaded here -->
+                    <span style="color: var(--text-muted);">Carregando categorias...</span>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Regras de Frete Grátis</h3>
+                    <button class="btn btn-primary btn-small" onclick="window.openShippingModal()">+ Nova Regra</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>CEP / Padrão</th>
+                            <th>Motivo (Label)</th>
+                            <th>Criado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shippingRulesTableBody">
+                        <tr>
+                            <td colspan="4">Carregando regras...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Pedidos</h3>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Data</th>
+                            <th>Pagamento</th>
+                            <th>Status Pag.</th>
+                            <th>Status Pedido</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Carregando pedidos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="loadMoreOrdersContainer" style="text-align: center; margin-top: 1rem; display: none;">
+                    <button id="loadMoreOrdersBtn" class="btn btn-outline" style="padding: 0.5rem 2rem;">Carregar
+                        Mais</button>
+                </div>
+            </div>
+
+            <div class="admin-content glass admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Gerenciar Produtos (Loja)</h3>
+                    <button id="openAddProduct" class="btn btn-primary btn-small">+ Novo Produto</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Img</th>
+                            <th>Produto</th>
+                            <th>Preço</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Carregando produtos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <span class="close-modal" id="closeProductModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 id="modalTitle">Novo Produto</h2>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="pName" required placeholder="Ex: CLP Siemens S7-1200">
+                    </div>
+                    <div class="form-group">
+                        <label>Preço (R$)</label>
+                        <input type="number" id="pPrice" step="0.01" required placeholder="0.00">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="pCategory">
+                            <!-- Dynamic Categories -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="pBrand" placeholder="Ex: Siemens, WEG, Schneider">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>URL da Imagem</label>
+                    <input type="text" id="pImage" placeholder="Ex: public/imagem.png">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                        <label>Peso (kg)</label>
+                        <input type="number" id="pWeight" step="0.001" value="0.500">
+                    </div>
+                    <div class="form-group">
+                        <label>Alt (cm)</label>
+                        <input type="number" id="pHeight" step="0.1" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Larg (cm)</label>
+                        <input type="number" id="pWidth" step="0.1" value="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Comp (cm)</label>
+                        <input type="number" id="pLength" step="0.1" value="20">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição Curta</label>
+                    <textarea id="pDesc" rows="2" required placeholder="Detalhes do equipamento..."></textarea>
+                </div>
+                <div class="form-group"
+                    style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                        Variações (ex: 220V, Modelo Pro)
+                        <button type="button" id="addVarBtn" class="btn btn-outline btn-small">+ Add Variação</button>
+                    </label>
+                    <div id="variationBuilder" style="margin-top: 10px;">
+                        <!-- Variations rows -->
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Salvar Produto
+                    Completo</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, getProductImage } from './supabase.js'
+
+        const loginForm = document.getElementById('adminLoginForm');
+        const loginWrapper = document.getElementById('adminLogin');
+        const dashboard = document.getElementById('adminDashboard');
+        const logoutBtn = document.getElementById('logoutAdmin');
+        const loginError = document.getElementById('loginError');
+        const refreshBtn = document.getElementById('refreshData');
+        const pModal = document.getElementById('productModal');
+        const pForm = document.getElementById('productForm');
+        const openPModalBtn = document.getElementById('openAddProduct');
+        const closePModalBtn = document.getElementById('closeProductModal');
+        const catList = document.getElementById('categoriesList');
+        const newCatInput = document.getElementById('newCatName');
+        const addCatBtn = document.getElementById('addCategoryBtn');
+        const varBuilder = document.getElementById('variationBuilder');
+        const addVarBtn = document.getElementById('addVarBtn');
+
+        let categories = [];
+
+        // Check if already logged in as admin
+        async function checkAdminSession() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.is_admin) {
+                    showAdminDashboard();
+                } else {
+                    // Not an admin
+                    if (window.location.pathname.includes('admin.html')) {
+                        loginWrapper.style.display = 'flex';
+                        dashboard.classList.remove('active');
+                    }
+                }
+            }
+        }
+
+        function showAdminDashboard() {
+            loginWrapper.style.display = 'none';
+            dashboard.classList.add('active');
+            loadDashboardData();
+            loadCategories();
+            loadProductsData();
+            loadOrdersData();
+            loadShippingRules();
+        }
+
+        // --- Category Management ---
+        async function loadCategories() {
+            const { data, error } = await supabase.from('categories').select('*').order('name');
+            if (error) {
+                console.error('Erro ao buscar categorias:', error);
+                return;
+            }
+            categories = data;
+
+            // Render list
+            catList.innerHTML = data.length ? '' : '<span style="color: var(--text-muted);">Nenhuma categoria.</span>';
+            data.forEach(cat => {
+                const badge = document.createElement('div');
+                badge.className = 'glass';
+                badge.style.cssText = 'padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; background: rgba(0,210,255,0.1); border: 1px solid var(--glass-border);';
+                badge.innerHTML = `
+                    ${cat.name}
+                    <span class="delete-cat" data-id="${cat.id}" style="cursor: pointer; color: #ff4d4d; font-weight: bold;">&times;</span>
+                `;
+                catList.appendChild(badge);
+            });
+
+            // Populate dropdown
+            const pCatSelect = document.getElementById('pCategory');
+            pCatSelect.innerHTML = data.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+            pCatSelect.innerHTML += '<option value="">Sem Categoria</option>';
+
+            // Bind delete
+            document.querySelectorAll('.delete-cat').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = btn.getAttribute('data-id');
+                    const { error } = await supabase.from('categories').delete().eq('id', id);
+                    if (error) alert('Erro ao excluir: ' + error.message);
+                    else loadCategories();
+                };
+            });
+        }
+
+        if (addCatBtn) {
+            addCatBtn.onclick = async () => {
+                const name = newCatInput.value.trim();
+                if (!name) return;
+                const { error } = await supabase.from('categories').insert([{ name }]);
+                if (error) alert('Erro ao adicionar: ' + error.message);
+                else {
+                    newCatInput.value = '';
+                    loadCategories();
+                }
+            };
+        }
+
+        async function loadShippingRules() {
+            const { data, error } = await supabase.from('free_shipping_rules').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('shippingRulesTableBody');
+            const ruleCountEl = document.getElementById('shippingRuleCount');
+            if (ruleCountEl) ruleCountEl.innerText = data?.length || 0;
+
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="4">Erro: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhuma regra cadastrada.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(rule => `
+                <tr>
+                    <td><strong>${rule.cep_pattern}</strong></td>
+                    <td>${rule.label || 'Frete Grátis'}</td>
+                    <td>${new Date(rule.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 5px 10px; color: #ff4d4d;" onclick="window.deleteShippingRule('${rule.id}')">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.openShippingModal = () => {
+            document.getElementById('shippingForm').reset();
+            document.getElementById('shippingModal').classList.add('active');
+        };
+
+        window.deleteShippingRule = async (id) => {
+            if (!confirm('Excluir esta regra de frete grátis?')) return;
+            const { error } = await supabase.from('free_shipping_rules').delete().eq('id', id);
+            if (error) alert('Erro ao excluir: ' + error.message);
+            else loadShippingRules();
+        };
+
+        // --- Variation Builder Logic ---
+        function addVariationRow(data = { name: '', price: '', stock: '' }) {
+            const div = document.createElement('div');
+            div.className = 'variation-row';
+            div.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: center;';
+            div.innerHTML = `
+                <input type="text" placeholder="Nome (ex: 220V)" value="${data.name}" class="glass var-name" style="padding: 5px; color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
+                <input type="number" placeholder="Preço" value="${data.price}" class="glass var-price" style="padding: 5px; color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
+                <input type="number" placeholder="Estoque" value="${data.stock}" class="glass var-stock" style="padding: 5px; color: white; border: 1px solid var(--glass-border); border-radius: 4px;">
+                <span class="remove-var" style="cursor: pointer; color: #ff4d4d; font-weight: bold; font-size: 1.2rem;">&times;</span>
+            `;
+            varBuilder.appendChild(div);
+            div.querySelector('.remove-var').onclick = () => div.remove();
+        }
+
+        if (addVarBtn) addVarBtn.onclick = () => addVariationRow();
+
+        function getVariationsData() {
+            const rows = document.querySelectorAll('.variation-row');
+            return Array.from(rows).map(row => ({
+                name: row.querySelector('.var-name').value,
+                price: parseFloat(row.querySelector('.var-price').value) || 0,
+                stock: parseInt(row.querySelector('.var-stock').value) || 0
+            })).filter(v => v.name);
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+
+            loginError.style.display = 'none';
+
+            // 1. Sign in with Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password: pass
+            });
+
+            if (error) {
+                loginError.innerText = 'Erro ao entrar: ' + error.message;
+                loginError.style.display = 'block';
+                return;
+            }
+
+            // 2. Check is_admin flag
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', data.user.id)
+                .single();
+
+            if (profile?.is_admin) {
+                showAdminDashboard();
+            } else {
+                loginError.innerText = 'Acesso negado: Você não tem permissão de administrador.';
+                loginError.style.display = 'block';
+                // Optional: sign out if not admin
+                await supabase.auth.signOut();
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            dashboard.classList.remove('active');
+            loginWrapper.style.display = 'flex';
+            loginForm.reset();
+        });
+
+        refreshBtn.addEventListener('click', () => {
+            loadDashboardData();
+            loadProductsData();
+            loadOrdersData();
+            loadShippingRules();
+        });
+
+        // --- Product CRUD Logic ---
+        openPModalBtn.onclick = () => {
+            document.getElementById('modalTitle').innerText = 'Novo Produto';
+            pForm.reset();
+            document.getElementById('productId').value = '';
+            varBuilder.innerHTML = '';
+            addVariationRow(); // Inicia com uma linha
+            pModal.classList.add('active');
+        };
+
+        closePModalBtn.onclick = () => pModal.classList.remove('active');
+        window.addEventListener('click', (e) => { if (e.target === pModal) pModal.classList.remove('active'); });
+
+        pForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('productId').value;
+            const variations = getVariationsData();
+
+            const productData = {
+                name: document.getElementById('pName').value,
+                brand: document.getElementById('pBrand').value,
+                image_url: document.getElementById('pImage').value,
+                description: document.getElementById('pDesc').value,
+                category_id: document.getElementById('pCategory').value || null,
+                price: parseFloat(document.getElementById('pPrice').value) || 0,
+                weight: parseFloat(document.getElementById('pWeight').value) || 0,
+                height: parseFloat(document.getElementById('pHeight').value) || 0,
+                width: parseFloat(document.getElementById('pWidth').value) || 0,
+                length: parseFloat(document.getElementById('pLength').value) || 0,
+            };
+
+            let currentProductId = id;
+
+            try {
+                if (id) {
+                    // Update base product
+                    const { error } = await supabase.from('products').update(productData).eq('id', id);
+                    if (error) throw new Error('Erro ao atualizar produto base: ' + error.message);
+                } else {
+                    // Insert base product
+                    const { data, error } = await supabase.from('products').insert([productData]).select().single();
+                    if (error) throw new Error('Erro ao criar produto: ' + error.message);
+                    if (!data) throw new Error('Erro: Produto criado mas nenhum dado retornado.');
+                    currentProductId = data.id;
+                }
+
+                // Handle Variations (Delete old ones and insert new ones)
+                if (id) {
+                    const { error: delErr } = await supabase.from('product_variations').delete().eq('product_id', id);
+                    if (delErr) console.warn('Aviso ao limpar variações antigas:', delErr.message);
+                }
+
+                if (variations.length > 0) {
+                    if (!currentProductId) throw new Error('Erro interno: ID do produto não encontrado para salvar variações.');
+
+                    const varsToInsert = variations.map(v => ({ ...v, product_id: currentProductId }));
+                    const { error: vErr } = await supabase.from('product_variations').insert(varsToInsert);
+                    if (vErr) throw new Error('Erro ao salvar variações: ' + vErr.message);
+                }
+
+                pModal.classList.remove('active');
+                loadProductsData();
+                alert('Produto salvo com sucesso!');
+            } catch (err) {
+                console.error('Erro no salvamento:', err);
+                alert(err.message);
+            }
+        };
+
+        async function loadProductsData() {
+            const { data: products, error } = await supabase.from('products').select('*, categories(name)').order('name');
+            const tbody = document.getElementById('productsTableBody');
+
+            if (error) {
+                tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar produtos.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.length ? '' : '<tr><td colspan="5" style="text-align: center;">Nenhum produto cadastrado.</td></tr>';
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <img src="${getProductImage(p.image_url, p.id)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid var(--glass-border);">
+                    </td>
+                    <td>
+                        <strong>${p.name}</strong><br>
+                        <small style="color: var(--primary);">${p.categories?.name || 'Sem categoria'} | ${p.brand || 'Sem marca'}</small>
+                    </td>
+                    <td>R$ ${p.price.toFixed(2).replace('.', ',')}</td>
+                    <td>
+                        <small style="color: var(--text-muted);">${p.description.substring(0, 50)}...</small>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline edit-btn" data-id="${p.id}" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Editar</button>
+                        <button class="btn btn-outline delete-btn" data-id="${p.id}" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #ff4d4d; border-color: rgba(255,77,77,0.3);">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Bind Actions
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = btn.getAttribute('data-id');
+                    const product = products.find(p => p.id === id);
+
+                    // Fetch Variations
+                    const { data: variations } = await supabase.from('product_variations').select('*').eq('product_id', id);
+
+                    document.getElementById('modalTitle').innerText = 'Editar Produto';
+                    document.getElementById('productId').value = product.id;
+                    document.getElementById('pName').value = product.name;
+                    document.getElementById('pPrice').value = product.price;
+                    document.getElementById('pCategory').value = product.category_id || '';
+                    document.getElementById('pBrand').value = product.brand || '';
+                    document.getElementById('pImage').value = product.image_url || '';
+                    document.getElementById('pDesc').value = product.description;
+                    document.getElementById('pWeight').value = product.weight || 0;
+                    document.getElementById('pHeight').value = product.height || 0;
+                    document.getElementById('pWidth').value = product.width || 0;
+                    document.getElementById('pLength').value = product.length || 0;
+
+                    // Load Variations into Builder
+                    varBuilder.innerHTML = '';
+                    if (variations && variations.length > 0) {
+                        variations.forEach(v => addVariationRow(v));
+                    } else {
+                        addVariationRow();
+                    }
+
+                    pModal.classList.add('active');
+                };
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    if (confirm('Tem certeza que deseja excluir este produto?')) {
+                        const id = btn.getAttribute('data-id');
+                        const { error } = await supabase.from('products').delete().eq('id', id);
+                        if (error) alert('Erro ao excluir: ' + error.message);
+                        else loadProductsData();
+                    }
+                };
+            });
+        }
+
+        async function loadDashboardData() {
+            // Fetch Quotes
+            const { data: quotes, error: qError } = await supabase
+                .from('quotes')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (qError) {
+                console.error(qError);
+                return;
+            }
+
+            // Update Table
+            const tbody = document.getElementById('quotesTableBody');
+            tbody.innerHTML = quotes.length ? '' : '<tr><td colspan="5" style="text-align: center;">Nenhum orçamento encontrado.</td></tr>';
+
+            quotes.forEach(quote => {
+                const tr = document.createElement('tr');
+                const date = new Date(quote.created_at).toLocaleDateString('pt-BR');
+                tr.innerHTML = `
+                    <td>${quote.client_name}</td>
+                    <td>${quote.service}</td>
+                    <td>${date}</td>
+                    <td><span class="status-badge status-${quote.status.toLowerCase()}">${quote.status}</span></td>
+                    <td><button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Ver</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Stats
+            document.getElementById('pendingCount').innerText = quotes.filter(q => q.status === 'Pendente').length;
+
+            // Fetch Total Profiles Count
+            const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+            document.getElementById('userCount').innerText = count || '0';
+        }
+
+        let currentOrderPage = 0;
+        const ordersPerPage = 5;
+
+        async function loadOrdersData(append = false) {
+            if (!append) {
+                currentOrderPage = 0;
+                document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="8" style="text-align: center;">Carregando pedidos...</td></tr>';
+            }
+
+            const from = currentOrderPage * ordersPerPage;
+            const to = from + ordersPerPage - 1;
+
+            const { data: orders, error, count } = await supabase
+                .from('orders')
+                .select('*, profiles(full_name, email)', { count: 'exact' })
+                .order('created_at', { ascending: false })
+                .range(from, to);
+
+            const tbody = document.getElementById('ordersTableBody');
+            const loadMoreContainer = document.getElementById('loadMoreOrdersContainer');
+
+            if (error) {
+                console.error('Erro detalhado Supabase (Orders):', error);
+                if (!append) tbody.innerHTML = `<tr><td colspan="8">Erro ao carregar pedidos: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!append) {
+                tbody.innerHTML = orders.length ? '' : '<tr><td colspan="8" style="text-align: center;">Nenhum pedido encontrado.</td></tr>';
+            }
+
+            orders.forEach(order => {
+                const date = new Date(order.created_at).toLocaleDateString('pt-BR');
+                const pMethod = order.payment_method === 'pix' ? '📱 PIX' : '💳 Cartão';
+                const pStatus = order.payment_status || 'pending';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${order.id.split('-')[0]}</td>
+                    <td>
+                        <strong>${order.profiles?.full_name || 'Usuário'}</strong><br>
+                        <small style="color: var(--text-muted);">${order.profiles?.email || 'N/A'}</small>
+                    </td>
+                    <td>R$ ${order.total_amount.toFixed(2).replace('.', ',')}</td>
+                    <td>${date}</td>
+                    <td>
+                        <span style="font-size: 0.85rem;">${pMethod}</span>
+                    </td>
+                    <td>
+                        <select onchange="window.updatePaymentStatus('${order.id}', this.value)" class="glass status-select" style="padding: 2px 5px; border-radius: 4px; color: white; background: ${pStatus === 'approved' ? '#00cc66' : '#ff9900'}; font-size: 0.8rem;">
+                            <option value="pending" ${pStatus === 'pending' ? 'selected' : ''}>Pendente</option>
+                            <option value="approved" ${pStatus === 'approved' ? 'selected' : ''}>Aprovado</option>
+                            <option value="cancelled" ${pStatus === 'cancelled' ? 'selected' : ''}>Cancelado</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="window.updateOrderStatus('${order.id}', this.value)" class="glass status-select" style="padding: 2px 5px; border-radius: 4px; color: white; background: var(--bg-card); font-size: 0.8rem;">
+                            <option value="Processando" ${order.status === 'Processando' ? 'selected' : ''}>Processando</option>
+                            <option value="Enviado" ${order.status === 'Enviado' ? 'selected' : ''}>Enviado</option>
+                            <option value="Cancelado" ${order.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+                            <option value="Concluido" ${order.status === 'Concluido' ? 'selected' : ''}>Concluido</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline btn-small" onclick="window.openOrderDetails('${order.id}')" style="margin-right: 5px;">Ver</button>
+                        <button class="btn btn-outline btn-small" onclick="window.deleteOrder('${order.id}')" style="color: #ff4d4d; border-color: rgba(255,77,77,0.3);">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Sales Stat (Total sales should still be calculated from all orders, or we can fetch a sum)
+            // For now, let's just use the count from Supabase for total orders
+            document.getElementById('orderCount').innerText = count || '0';
+
+            // Show/Hide Load More
+            if (count > (from + orders.length)) {
+                loadMoreContainer.style.display = 'block';
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
+
+        // Initialize Load More Button
+        document.getElementById('loadMoreOrdersBtn').onclick = () => {
+            currentOrderPage++;
+            loadOrdersData(true);
+        };
+
+        // For total sales, we need a separate query or calculate from visible (not ideal)
+        async function updateSalesStat() {
+            const { data, error } = await supabase.from('orders').select('total_amount');
+            if (!error && data) {
+                const total = data.reduce((acc, curr) => acc + (parseFloat(curr.total_amount) || 0), 0);
+                document.getElementById('totalSales').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            }
+        }
+        updateSalesStat();
+
+        // --- Order Details Modal Logic ---
+        const detailsModal = document.getElementById('orderDetailsModal');
+        const closeDetailsBtn = document.getElementById('closeOrderDetailsModal');
+
+        closeDetailsBtn.onclick = () => detailsModal.classList.remove('active');
+        window.addEventListener('click', (e) => { if (e.target === detailsModal) detailsModal.classList.remove('active'); });
+
+        window.openOrderDetails = async (orderId) => {
+            // Show loading or similar
+            document.getElementById('detailOrderId').innerText = `Pedido #${orderId.split('-')[0]}`;
+            detailsModal.classList.add('active');
+
+            try {
+                // Fetch Order with Profile
+                const { data: order, error: orderErr } = await supabase
+                    .from('orders')
+                    .select('*, profiles(*)')
+                    .eq('id', orderId)
+                    .single();
+
+                if (orderErr) throw orderErr;
+
+                // Fetch Order Items
+                const { data: items, error: itemsErr } = await supabase
+                    .from('order_items')
+                    .select('*')
+                    .eq('order_id', orderId);
+
+                if (itemsErr) throw itemsErr;
+
+                // Populate Customer Info
+                document.getElementById('detailCustomerName').innerHTML = `<strong>Nome:</strong> ${order.profiles?.full_name || 'N/A'}`;
+                document.getElementById('detailCustomerEmail').innerHTML = `<strong>E-mail:</strong> ${order.profiles?.email || 'N/A'}`;
+                document.getElementById('detailCustomerPhone').innerHTML = `<strong>Telefone:</strong> ${order.contact_phone || order.profiles?.phone || 'N/A'}`;
+
+                // Populate Shipping Addr
+                const addr = order.shipping_address;
+                if (addr) {
+                    document.getElementById('detailShippingAddr').innerHTML = `
+                        ${addr.street}, ${addr.number}<br>
+                        ${addr.neighborhood}<br>
+                        ${addr.city} - ${addr.state}<br>
+                        CEP: ${addr.zip_code}
+                    `;
+                } else {
+                    document.getElementById('detailShippingAddr').innerText = 'Não informado';
+                }
+
+                // Populate Products
+                const productList = document.getElementById('detailProducts');
+                productList.innerHTML = items.map(item => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align: left;">
+                            <span style="font-weight: 600;">${item.product_name}</span><br>
+                            <small style="color: var(--text-muted);">Qtd: ${item.quantity} x R$ ${item.price_at_purchase.toFixed(2)}</small>
+                        </div>
+                        <div style="font-weight: 700; color: var(--primary);">
+                            R$ ${(item.quantity * item.price_at_purchase).toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('detailTotal').innerText = `R$ ${order.total_amount.toFixed(2).replace('.', ',')}`;
+
+            } catch (err) {
+                console.error("Erro ao carregar detalhes:", err);
+                alert("Erro ao carregar detalhes do pedido.");
+                detailsModal.classList.remove('active');
+            }
+        };
+
+        window.updatePaymentStatus = async (orderId, newStatus) => {
+            const { error } = await supabase
+                .from('orders')
+                .update({ payment_status: newStatus })
+                .eq('id', orderId);
+
+            if (error) {
+                alert('Erro ao atualizar pagamento: ' + error.message);
+                loadOrdersData();
+            } else {
+                console.log(`Pagamento do pedido ${orderId} atualizado para ${newStatus}`);
+                loadOrdersData(); // Refresh to update colors
+            }
+        };
+
+        window.deleteOrder = async (orderId) => {
+            if (!confirm(`Tem certeza que deseja excluir o pedido #${orderId.split('-')[0]}? Esta ação não pode ser desfeita.`)) {
+                return;
+            }
+
+            const { error } = await supabase
+                .from('orders')
+                .delete()
+                .eq('id', orderId);
+
+            if (error) {
+                alert('Erro ao excluir pedido: ' + error.message);
+            } else {
+                // Remove row visually or reload
+                loadOrdersData();
+            }
+        };
+
+        window.updateOrderStatus = async (orderId, newStatus) => {
+            const { error } = await supabase
+                .from('orders')
+                .update({ status: newStatus })
+                .eq('id', orderId);
+
+            if (error) {
+                alert('Erro ao atualizar status: ' + error.message);
+                loadOrdersData();
+            } else {
+                // Toast logic could go here, but for now just console
+                console.log(`Status do pedido ${orderId} atualizado para ${newStatus}`);
+            }
+        };
+
+        // --- Shipping Form Submission ---
+        document.getElementById('shippingForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const updates = {
+                cep_pattern: document.getElementById('sCep').value,
+                label: document.getElementById('sLabel').value
+            };
+
+            const { error } = await supabase.from('free_shipping_rules').insert(updates);
+            if (error) {
+                alert('Erro ao salvar regra: ' + error.message);
+            } else {
+                document.getElementById('shippingModal').classList.remove('active');
+                if (typeof loadShippingRules === 'function') loadShippingRules();
+            }
+        };
+
+        // Run check on load
+        checkAdminSession();
+    </script>
+    <!-- Shipping Rule Modal -->
+    <div id="shippingModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <span class="close-modal" id="closeShippingModal">&times;</span>
+            <h2 id="shippingModalTitle">Nova Regra de Frete</h2>
+            <form id="shippingForm">
+                <div class="form-group">
+                    <label>CEP ou Padrão (Ex: 83601-120 ou 836%)</label>
+                    <input type="text" id="sCep" required placeholder="83601-120">
+                    <small style="color: var(--text-muted);">Use % para cobrir uma faixa de CEPs</small>
+                </div>
+                <div class="form-group">
+                    <label>Título da Regra</label>
+                    <input type="text" id="sLabel" placeholder="Ex: Promoção Local">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Salvar
+                    Regra</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal-overlay">
+        <div class="modal-content glass" style="max-width: 600px;">
+            <span class="close-modal" id="closeOrderDetailsModal">&times;</span>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2>Detalhes do Pedido</h2>
+                <p id="detailOrderId" style="color: var(--primary); font-weight: bold;"></p>
+            </div>
+
+            <div id="orderContent"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: left; margin-bottom: 2rem;">
+                <div>
+                    <h4
+                        style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        Dados do Cliente</h4>
+                    <p id="detailCustomerName"><strong>Nome:</strong> ...</p>
+                    <p id="detailCustomerEmail"><strong>E-mail:</strong> ...</p>
+                    <p id="detailCustomerPhone"><strong>Telefone:</strong> ...</p>
+                </div>
+                <div>
+                    <h4
+                        style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        Endereço de Entrega</h4>
+                    <p id="detailShippingAddr">...</p>
+                </div>
+            </div>
+
+            <h4
+                style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-bottom: 1rem; text-align: left;">
+                Produtos</h4>
+            <div id="detailProducts" style="max-height: 200px; overflow-y: auto; margin-bottom: 2rem;">
+                <!-- Product list will be loaded here -->
+            </div>
+
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 1rem; text-align: right;">
+                <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">Total: <span id="detailTotal">R$
+                        0,00</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
