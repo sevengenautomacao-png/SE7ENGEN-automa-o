@@ -83,10 +83,22 @@ ul {
 }
 
 .btn-small {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
   white-space: nowrap;
+  min-width: auto;
 }
+
+.btn-delete {
+  color: #ff4d4d !important;
+  border-color: rgba(255, 77, 77, 0.3) !important;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 77, 77, 0.1) !important;
+  border-color: #ff4d4d !important;
+}
+
 
 
 /* Sections */
@@ -606,6 +618,10 @@ footer {
   color: var(--primary);
 }
 
+.admin-content {
+  overflow-x: auto;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -613,6 +629,7 @@ footer {
   background: var(--glass);
   border-radius: 12px;
   overflow: hidden;
+  table-layout: auto;
 }
 
 .admin-table th,
@@ -635,11 +652,16 @@ footer {
 .admin-table td:last-child {
   white-space: nowrap;
   width: 1%;
+  min-width: 120px;
 }
 
 .admin-table td:last-child button {
   margin-right: 0.25rem;
   margin-bottom: 0.25rem;
+  display: inline-block;
+  max-width: 55px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-table td:last-child button:last-child {
