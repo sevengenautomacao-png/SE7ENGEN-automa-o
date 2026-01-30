@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js'
+import { supabase, getProductImage } from './supabase.js'
 
 // --- UI Elements ---
 const navbar = document.getElementById('navbar');
@@ -15,6 +15,65 @@ const googleLoginBtn = document.getElementById('googleLogin');
 const passwordToggles = document.querySelectorAll('.password-toggle');
 
 let currentUser = null;
+
+// --- Featured Products Logic ---
+async function loadFeaturedProducts() {
+    const container = document.getElementById('featuredProducts');
+    if (!container) return; // Not on home page
+
+    // 1. Try to fetch featured products
+    let { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_featured', true)
+        .limit(3);
+
+    // 2. Fallback: If less than 3 featured, fill with latest products
+    if (!error && (!products || products.length < 3)) {
+        const fetchedIds = products ? products.map(p => p.id) : [];
+        const limitNeeded = 3 - fetchedIds.length;
+
+        const { data: latest } = await supabase
+            .from('products')
+            .select('*')
+            .not('id', 'in', `(${fetchedIds.join(',')})`) // Exclude already fetched
+            .order('created_at', { ascending: false })
+            .limit(limitNeeded);
+
+        if (latest) {
+            products = [...(products || []), ...latest];
+        }
+    }
+
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center;"><p>Em breve novos produtos.</p></div>';
+        return;
+    }
+
+    container.innerHTML = products.map(p => `
+        <div class="product-card glass">
+            <div class="product-image">
+                <img src="${getProductImage(p.image_url, p.id)}" alt="${p.name}" loading="lazy">
+            </div>
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">${p.description ? p.description.substring(0, 80) + '...' : 'Descrição indisponível.'}</p>
+                <div class="product-price">R$ ${p.price.toFixed(2).replace('.', ',')}</div>
+                <button class="btn btn-primary" onclick="window.addToCart('${p.name.replace(/'/g, "\\'")}')" style="width: 100%;">Comprar Agora</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
+
+    // Check if we are on homepage
+    if (document.getElementById('featuredProducts')) {
+        loadFeaturedProducts();
+    }
+});
 
 // --- Navbar scroll effect ---
 window.addEventListener('scroll', () => {
@@ -290,6 +349,4 @@ passwordToggles.forEach(toggle => {
     });
 });
 
-// Initializing
-initAuth();
 console.log("SE7ENGEN Enhanced UI Logic Initialized");

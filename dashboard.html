@@ -144,6 +144,10 @@
                                     <label>Telefone / WhatsApp</label>
                                     <input type="text" id="profilePhone" placeholder="(00) 00000-0000">
                                 </div>
+                                <div class="form-group">
+                                    <label>CPF / CNPJ</label>
+                                    <input type="text" id="profileTaxId" placeholder="000.000.000-00">
+                                </div>
                                 <div class="form-group" style="grid-column: span 2;">
                                     <label>Nome da Empresa (se aplicável)</label>
                                     <input type="text" id="profileCompany" placeholder="SE7ENGEN LTDA">
@@ -231,6 +235,7 @@
 
             <div id="savedAddressSection"
                 style="display: none; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 8px; background: rgba(0, 210, 255, 0.05);">
+                <input type="hidden" id="usingSavedAddressVal" value="false">
                 <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Endereço Salvo</h4>
                 <p id="savedAddressText" style="font-size: 0.9rem; line-height: 1.6;"></p>
                 <button id="useSavedAddressBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Usar este
@@ -247,6 +252,18 @@
             </div>
 
             <form id="newAddressForm">
+                <div style="margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label>CPF / CNPJ (Para Nota Fiscal)</label>
+                        <input type="text" id="shipTaxId" placeholder="000.000.000-00" style="width: 100%;">
+                        <div style="display: flex; align-items: center; margin-top: 5px;">
+                            <input type="checkbox" id="saveTaxIdCheck" style="margin-right: 5px;">
+                            <label for="saveTaxIdCheck"
+                                style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">Salvar no meu
+                                perfil</label>
+                        </div>
+                    </div>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label>CEP</label>
@@ -278,7 +295,12 @@
             </form>
 
             <div id="shippingOptionsSection" style="display: none; margin-top: 2rem;">
-                <h4 style="margin-bottom: 1rem;">Escolha o Tipo de Envio</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <h4 style="margin: 0;">Escolha o Tipo de Envio</h4>
+                    <button id="backToAddressBtn" class="btn btn-sm"
+                        style="background: none; border: none; color: var(--primary); cursor: pointer;">Alterar
+                        Endereço</button>
+                </div>
                 <div id="shippingOptionsList" style="display: grid; gap: 10px;">
                     <!-- Quotes will be loaded here -->
                 </div>
@@ -304,6 +326,21 @@
 
             <div id="orderFinalSummary"
                 style="display: none; margin-top: 2rem; padding: 1.5rem; border-top: 1px solid var(--glass-border);">
+
+                <div
+                    style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 1rem;">Resumo da Entrega</h4>
+                        <button id="changeAddressBtn" class="btn btn-sm"
+                            style="background: none; border: none; color: var(--primary); cursor: pointer; padding: 0;">Alterar</button>
+                    </div>
+                    <p id="summaryAddress" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.2rem;">
+                        ...</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">CPF/CNPJ na Nota: <span id="summaryTaxId"
+                            style="color: var(--text);">...</span></p>
+                </div>
+
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span>Subtotal:</span>
                     <span id="summarySubtotal">R$ 0,00</span>
@@ -358,6 +395,7 @@
                 // Populate form fields
                 document.getElementById('profileName').value = profile.full_name || '';
                 document.getElementById('profilePhone').value = profile.phone || '';
+                document.getElementById('profileTaxId').value = profile.tax_id || ''; // Load Tax ID
                 document.getElementById('profileCompany').value = profile.company_name || '';
 
                 // Detailed Address
@@ -435,6 +473,7 @@
                     id: user.id,
                     full_name: document.getElementById('profileName').value,
                     phone: document.getElementById('profilePhone').value,
+                    tax_id: document.getElementById('profileTaxId').value, // Save Tax ID
                     company_name: document.getElementById('profileCompany').value,
 
                     // Detailed Address
@@ -658,15 +697,18 @@
             const newForm = document.getElementById('newAddressForm');
             const closeBtn = document.getElementById('closeShippingModal');
 
-            // Reset Form
+            // Reset Form (and Tax ID)
             newForm.reset();
+            if (profile && profile.tax_id) {
+                document.getElementById('shipTaxId').value = profile.tax_id;
+            }
 
             // Check if user has saved address
             const hasSaved = profile && profile.zip_code && profile.street;
             if (hasSaved) {
                 savedSection.style.display = 'block';
                 divider.style.display = 'block';
-                savedText.innerText = `${profile.street}, ${profile.number}${profile.address_notes ? ' (' + profile.address_notes + ')' : ''}\n${profile.neighborhood}, ${profile.city} - ${profile.state}\nCEP: ${profile.zip_code}`;
+                savedText.innerText = `${profile.street}, ${profile.number}${profile.address_notes ? ' (' + profile.address_notes + ')' : ''}\n${profile.neighborhood}, ${profile.city} - ${profile.state}\nCEP: ${profile.zip_code}\n${profile.tax_id ? 'CPF/CNPJ: ' + profile.tax_id : ''}`;
             } else {
                 savedSection.style.display = 'none';
                 divider.style.display = 'none';
@@ -691,7 +733,8 @@
                         user_id: user.id,
                         total_amount: total,
                         shipping_address: shippingAddress,
-                        contact_phone: shippingAddress.phone || profile?.phone
+                        contact_phone: shippingAddress.phone || profile?.phone,
+                        tax_id: shippingAddress.tax_id // Save tax ID to order
                     }).select().single();
 
                     if (orderErr) throw orderErr;
@@ -883,15 +926,84 @@
             */
 
             // Handle Transitions
+            // Helper to get current address state
+            const getCurrentAddress = () => {
+                const usingSaved = document.getElementById('usingSavedAddressVal').value === 'true';
+                const taxIdInput = document.getElementById('shipTaxId').value;
+                if (usingSaved && profile && profile.zip_code) {
+                    return { ...profile, tax_id: profile.tax_id || taxIdInput }; // Prioritize profile address, but allow tax_id override if we add input there? 
+                    // Actually, if usingSaved is true, the form is hidden. So shipTaxId might be empty.
+                    // A better approach: When usingSaved is true, we rely on profile. 
+                    // But if user wants to change tax_id, they must Edit (which unsets usingSaved).
+                    // So:
+                }
+                return {
+                    zip_code: document.getElementById('shipZip').value,
+                    state: document.getElementById('shipState').value,
+                    city: document.getElementById('shipCity').value,
+                    street: document.getElementById('shipStreet').value,
+                    number: document.getElementById('shipNumber').value,
+                    neighborhood: document.getElementById('shipNeighborhood').value,
+                    tax_id: taxIdInput
+                };
+            };
+
+            // --- Event Handlers for Navigation ---
+
             document.getElementById('useSavedAddressBtn').onclick = () => {
+                document.getElementById('usingSavedAddressVal').value = 'true';
+                document.getElementById('savedAddressSection').style.display = 'block'; // Keep it visible? No, designs says hide form.
+                // Actually original code hid section.
                 document.getElementById('savedAddressSection').style.display = 'none';
                 document.getElementById('addressDivider').style.display = 'none';
                 document.getElementById('newAddressForm').style.display = 'none';
                 getShippingQuotes(profile.zip_code);
             };
 
+            document.getElementById('editSavedAddressBtn').onclick = () => {
+                document.getElementById('usingSavedAddressVal').value = 'false';
+                // Populate form
+                document.getElementById('shipTaxId').value = profile.tax_id || '';
+                document.getElementById('shipZip').value = profile.zip_code || '';
+                document.getElementById('shipState').value = profile.state || '';
+                document.getElementById('shipCity').value = profile.city || '';
+                document.getElementById('shipStreet').value = profile.street || '';
+                document.getElementById('shipNumber').value = profile.number || '';
+                document.getElementById('shipNeighborhood').value = profile.neighborhood || '';
+
+                // Switch view
+                document.getElementById('savedAddressSection').style.display = 'none';
+                document.getElementById('addressDivider').style.display = 'none';
+                document.getElementById('newAddressForm').style.display = 'block';
+            };
+
+            const resetToAddressStep = () => {
+                document.getElementById('shippingOptionsSection').style.display = 'none';
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('orderFinalSummary').style.display = 'none';
+
+                // Reuse logic from handleCheckout to decide what to show
+                const hasSaved = profile && profile.zip_code && profile.street;
+                if (hasSaved) {
+                    document.getElementById('savedAddressSection').style.display = 'block';
+                    document.getElementById('addressDivider').style.display = 'block';
+                    document.getElementById('newAddressForm').style.display = 'block'; // Show both so user can choose? Or match initial.
+                    // Initial shows saved, hides form? No, initially both are separate.
+                    // Let's mimic initial state but maybe with form visible?
+                    // Actually simplest: Show Saved Section, Show Divider, Show Form.
+                    // Or just trigger edit if they came back?
+                    // Let's show the standard initial state.
+                } else {
+                    document.getElementById('newAddressForm').style.display = 'block';
+                }
+            };
+
+            document.getElementById('backToAddressBtn').onclick = resetToAddressStep;
+            document.getElementById('changeAddressBtn').onclick = resetToAddressStep;
+
             newForm.onsubmit = (e) => {
                 e.preventDefault();
+                document.getElementById('usingSavedAddressVal').value = 'false';
                 const destCep = document.getElementById('shipZip').value;
                 document.getElementById('savedAddressSection').style.display = 'none';
                 document.getElementById('addressDivider').style.display = 'none';
@@ -899,19 +1011,66 @@
                 getShippingQuotes(destCep);
             };
 
-            document.getElementById('confirmOrderBtn').onclick = () => {
-                const address = (document.getElementById('newAddressForm').style.display === 'none') ? profile : {
-                    zip_code: document.getElementById('shipZip').value,
-                    state: document.getElementById('shipState').value,
-                    city: document.getElementById('shipCity').value,
-                    street: document.getElementById('shipStreet').value,
-                    number: document.getElementById('shipNumber').value,
-                    neighborhood: document.getElementById('shipNeighborhood').value,
-                };
+            function showFinalSummary() {
+                const subtotal = cartItems.reduce((acc, item) => acc + (item.products.price * item.quantity), 0);
+                const total = subtotal + selectedShipping.price;
+
+                // Populate Address Summary
+                const addr = document.getElementById('usingSavedAddressVal').value === 'true' ? profile : getCurrentAddress();
+
+                document.getElementById('summaryAddress').innerText = `${addr.street}, ${addr.number} - ${addr.neighborhood}, ${addr.city}/${addr.state} (${addr.zip_code})`;
+                document.getElementById('summaryTaxId').innerText = addr.tax_id || profile.tax_id || 'Não informado';
+
+                showStep(steps.PAYMENT);
+
+                document.getElementById('summarySubtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+                document.getElementById('summaryMethod').innerText = selectedShipping.method;
+                document.getElementById('summaryShipping').innerText = `R$ ${selectedShipping.price.toFixed(2).replace('.', ',')}`;
+                document.getElementById('summaryTotal').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+                // Auto-select Pix
+                document.getElementById('payPix').click();
+            }
+
+            document.getElementById('confirmOrderBtn').onclick = async () => {
+                const saveTaxId = document.getElementById('saveTaxIdCheck').checked;
+                const isUsingSaved = document.getElementById('usingSavedAddressVal').value === 'true';
+
+                let address;
+                let taxIdToUse;
+
+                if (isUsingSaved) {
+                    address = profile;
+                    taxIdToUse = profile.tax_id;
+                    // If profile has no tax_id, we have a problem. 
+                    // But standard flow: user should have added it.
+                    // If missing, we could prompt? 
+                    if (!taxIdToUse) {
+                        const input = prompt("Por favor, digite seu CPF/CNPJ para a nota fiscal:");
+                        if (!input) return;
+                        taxIdToUse = input;
+                        address.tax_id = input;
+                        // Optionally save it
+                        await supabase.from('profiles').update({ tax_id: input }).eq('id', user.id);
+                    }
+                } else {
+                    const taxIdInput = document.getElementById('shipTaxId').value;
+                    if (!taxIdInput || taxIdInput.trim() === '') {
+                        alert('Por favor, informe o CPF ou CNPJ para a nota fiscal.');
+                        return;
+                    }
+                    taxIdToUse = taxIdInput;
+
+                    if (saveTaxId && user) {
+                        supabase.from('profiles').update({ tax_id: taxIdInput }).eq('id', user.id);
+                    }
+
+                    address = getCurrentAddress();
+                }
 
                 // Remove modal and start processing
                 shippingModal.classList.remove('active');
-                processOrderWithShipping(address, selectedShipping, selectedPayment);
+                processOrderWithShipping({ ...address, tax_id: taxIdToUse }, selectedShipping, selectedPayment);
             };
 
             const processOrderWithShipping = async (shippingAddress, shippingData, paymentMethod) => {

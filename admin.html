@@ -246,6 +246,16 @@
                     <label>Descrição Curta</label>
                     <textarea id="pDesc" rows="2" required placeholder="Detalhes do equipamento..."></textarea>
                 </div>
+
+                <div
+                    style="margin-top: 1rem; display: flex; align-items: center; gap: 10px; background: rgba(0, 210, 255, 0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--primary);">
+                    <input type="checkbox" id="pFeatured"
+                        style="width: 20px; height: 20px; accent-color: var(--primary);">
+                    <label for="pFeatured"
+                        style="margin-bottom: 0; cursor: pointer; color: white; font-weight: 600;">Exibir na Vitrine
+                        (Destaque)</label>
+                </div>
+
                 <div class="form-group"
                     style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
                     <label style="display: flex; justify-content: space-between; align-items: center;">
@@ -511,6 +521,7 @@
                 height: parseFloat(document.getElementById('pHeight').value) || 0,
                 width: parseFloat(document.getElementById('pWidth').value) || 0,
                 length: parseFloat(document.getElementById('pLength').value) || 0,
+                is_featured: document.getElementById('pFeatured').checked // Save Featured Status
             };
 
             let currentProductId = id;
@@ -521,6 +532,12 @@
                     const { error } = await supabase.from('products').update(productData).eq('id', id);
                     if (error) throw new Error('Erro ao atualizar produto base: ' + error.message);
                 } else {
+                    // Check limit for featured (optional but good UI)
+                    if (productData.is_featured) {
+                        const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_featured', true);
+                        // if (count >= 3) alert('Aviso: Você já tem 3 ou mais produtos na vitrine.'); 
+                    }
+
                     // Insert base product
                     const { data, error } = await supabase.from('products').insert([productData]).select().single();
                     if (error) throw new Error('Erro ao criar produto: ' + error.message);
@@ -564,12 +581,13 @@
 
             products.forEach(p => {
                 const tr = document.createElement('tr');
+                const featuredStar = p.is_featured ? '<span style="color: gold; margin-right: 5px; font-size: 1.2rem;" title="Destaque na Home">★</span>' : '';
                 tr.innerHTML = `
                     <td>
                         <img src="${getProductImage(p.image_url, p.id)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid var(--glass-border);">
                     </td>
                     <td>
-                        <strong>${p.name}</strong><br>
+                        <strong>${featuredStar}${p.name}</strong><br>
                         <small style="color: var(--primary);">${p.categories?.name || 'Sem categoria'} | ${p.brand || 'Sem marca'}</small>
                     </td>
                     <td>R$ ${p.price.toFixed(2).replace('.', ',')}</td>
@@ -605,6 +623,9 @@
                     document.getElementById('pHeight').value = product.height || 0;
                     document.getElementById('pWidth').value = product.width || 0;
                     document.getElementById('pLength').value = product.length || 0;
+
+                    // Set Featured Checkbox
+                    document.getElementById('pFeatured').checked = !!product.is_featured;
 
                     // Load Variations into Builder
                     varBuilder.innerHTML = '';
